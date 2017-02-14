@@ -1,5 +1,6 @@
 
-const {structs, ifaces} = require('./parse.json')
+const path = require('path')
+const {structs, ifaces} = require(path.join(__dirname, '../data/parse.json'))
 
 const plain = [
   'BOOL',
@@ -23,14 +24,21 @@ const starts = [
   'MSCurvePoint',
   'MSLayerGroup',
   'MSPage',
+  'MSSymbolInstance',
+  'MSSymbolMaster',
 ]
 
 const disable = {
   MSTextLayer: ['baselineOffsetsValue', 'baselineOffsets', 'exportOptionsGeneric', 'influenceRectEdgePaddingsThatCascadeToContainedLayers'],
+  MSPage: ['cachedArtboards', 'cachedExportableLayers', 'currentArtboard', 'layers'],
 }
 
 const globalDisable = [
   'influenceRectEdgePaddingsThatCascadeToContainedLayers',
+  'parentObject',
+  'modelObjectCacheGeneration',
+  'immutableModelObject',
+  'cachedImmutableModelObject',
 ]
 
 const convs = {struct: {
@@ -77,11 +85,13 @@ const convertStruct = (name, vbl) => {
     ))
     convs.struct[name] = `function ${fname}(data) {
   // log('converting ${name}')
+  if (data.description && seen[data.description]) return data.description
   if (!data) return null
-  return {
+  seen[data.description] = {
     $type: "${name}",
     ${attrs.join('\n    ')}
   }
+  return data.description
 }`
   }
   return `${fname}(${vbl})`
@@ -92,19 +102,45 @@ const convertIface = (name, vbl) => {
   const fname = `conv${name}Iface`
   if (!convs.iface[name]) {
     convs.iface[name] = true
+
+    const propnames = ifaces[name].properties.map(p => p.name)
+
     const attrs = ifaces[name].properties
       .filter(p => (disable[name] || []).indexOf(p.name) === -1)
       .filter(p => globalDisable.indexOf(p.name) === -1)
       .map(prop => (
-      `${prop.name}: ${convertType(prop.type, 'data.' + prop.name + '()')},`
-    ))
+        `${prop.name}: ${convertType(prop.type, 'data.' + prop.name + '()')},`
+      ))
+
+    let superc = ifaces[name].superclass
+    let inheritnames = []
+    let inherited = []
+    while (superc && ifaces[superc]) {
+      const items = ifaces[superc].properties.filter(x => propnames.indexOf(x.name) === -1 &&
+                                                         inheritnames.indexOf(x.name) === -1)
+      inherited.push(...items)
+      inheritnames.push(...items.map(m => m.name))
+      superc = ifaces[superc].superclass
+    }
+    const inheritext = inherited
+      .filter(p => (disable[name] || []).indexOf(p.name) === -1)
+      .filter(p => globalDisable.indexOf(p.name) === -1)
+      .map(prop => (
+        `${prop.name}: ${convertType(prop.type, 'data.' + prop.name + '()')},`
+      ))
+
     convs.iface[name] = `function ${fname}(data) {
   // log('converting ${name}')
+  if (data.description && seen[data.description]) return data.description
   if (!data) return null
-  return {
+  seen[data.description] = {
     $type: "${name}",
     ${attrs.join('\n    ')}
+
+    // inherited
+    ${inheritext.join('\n    ')}
   }
+  return data.description
 }`
   }
   return `${fname}(${vbl})`
@@ -124,7 +160,16 @@ const tests = Object.keys(convs.iface).map(name => (
 ))
 
 const preamble = `
+
+var seen = {}
+
 function convertGeneric(data) {
+  if (!data.description) return _convertGeneric(data)
+  if (!seen[data.description]) seen[data.description] = _convertGeneric(data)
+  return data.description
+}
+
+function _convertGeneric(data) {
   ${tests[0]} else ${tests.slice(1).join(' else ')}
     // NSColor
   else if (data.redComponent && data.greenComponent) {
@@ -198,13 +243,13 @@ var dest = modal.URL().path()
 var dest = '/Users/jared/khan/skreact/output.json'
 
 var d = context.api().selectedDocument.selectedPage.sketchObject
-var dump = JSON.stringify(convertGeneric(d), null, 2)
+var dump = JSON.stringify({items: convertGeneric(d), seen: seen}, null, 2)
 writeFile(dest, dump)
 log('dumped!')
 `
 
 const fs = require('fs')
-fs.writeFileSync('./src/sketchExportJSON.js', text, 'utf8')
+fs.writeFileSync(path.join(__dirname, 'sketchExportJSON.js'), text, 'utf8')
 
 console.log('unconvertable')
 console.log(general.join('\n'))
