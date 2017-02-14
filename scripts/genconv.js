@@ -15,6 +15,7 @@ const nums = [
 ]
 
 const starts = [
+  'MSDocument',
   'MSShapeGroup',
   'MSTextLayer',
   'MSOvalShape',
@@ -26,11 +27,30 @@ const starts = [
   'MSPage',
   'MSSymbolInstance',
   'MSSymbolMaster',
+  'MSArtboardGroup',
+  'MSImmutableSymbolMaster',
+  'MSImmutableSharedStyle',
 ]
+
+const clearedForInheritance = [
+  'MSImmutableSymbolMaster',
+  'MSSymbolInstance',
+  'MSSymbolMaster',
+]
+
+/*
+    innerShadows: convertArray(data.innerShadows()),
+    shadows: convertArray(data.shadows()),
+    borders: convertArray(data.borders()),
+   */
 
 const disable = {
   MSTextLayer: ['baselineOffsetsValue', 'baselineOffsets', 'exportOptionsGeneric', 'influenceRectEdgePaddingsThatCascadeToContainedLayers'],
-  MSPage: ['cachedArtboards', 'cachedExportableLayers', 'currentArtboard', 'layers'],
+  // MSPage: ['cachedArtboards', 'cachedExportableLayers', 'currentArtboard', 'layers'],
+  MSSymbolInstance: ['symbolMasterEdgePaddings'],
+  MSContentDrawView: ['zoomTool'],
+  MSNormalEventHandler: ['positionDrawing'],
+  MSImmutableSymbolMaster: ['influenceRectEdgePaddingsThatDoNotCascade'],
 }
 
 const globalDisable = [
@@ -85,13 +105,11 @@ const convertStruct = (name, vbl) => {
     ))
     convs.struct[name] = `function ${fname}(data) {
   // log('converting ${name}')
-  if (data.description && seen[data.description]) return data.description
   if (!data) return null
-  seen[data.description] = {
+  return {
     $type: "${name}",
     ${attrs.join('\n    ')}
   }
-  return data.description
 }`
   }
   return `${fname}(${vbl})`
@@ -109,7 +127,7 @@ const convertIface = (name, vbl) => {
       .filter(p => (disable[name] || []).indexOf(p.name) === -1)
       .filter(p => globalDisable.indexOf(p.name) === -1)
       .map(prop => (
-        `${prop.name}: ${convertType(prop.type, 'data.' + prop.name + '()')},`
+        `${prop.name}: data.${prop.name} ? ${convertType(prop.type, 'data.' + prop.name + '()')} : null,`
       ))
 
     let superc = ifaces[name].superclass
@@ -126,21 +144,29 @@ const convertIface = (name, vbl) => {
       .filter(p => (disable[name] || []).indexOf(p.name) === -1)
       .filter(p => globalDisable.indexOf(p.name) === -1)
       .map(prop => (
-        `${prop.name}: ${convertType(prop.type, 'data.' + prop.name + '()')},`
+        `${prop.name}: data.${prop.name} ? ${convertType(prop.type, 'data.' + prop.name + '()')} : null,`
       ))
 
+    const fullin = clearedForInheritance.indexOf(name) === -1
+      ? '// ' + inheritext.join('\n    // ')
+      : inheritext.join('\n    ')
+
     convs.iface[name] = `function ${fname}(data) {
-  // log('converting ${name}')
-  if (data.description && seen[data.description]) return data.description
+  var idx = natives.indexOf(data)
+  if (idx !== -1) return {$ref: idx}
+  idx = natives.length
+  natives.push(data)
+  log('converting ${name}')
   if (!data) return null
-  seen[data.description] = {
+  converteds[idx] = {
     $type: "${name}",
     ${attrs.join('\n    ')}
 
     // inherited
-    ${inheritext.join('\n    ')}
+    // TODO maybe enable some time? figure out what's crashing
+    ${fullin}
   }
-  return data.description
+  return {$ref: idx}
 }`
   }
   return `${fname}(${vbl})`
@@ -159,17 +185,28 @@ const tests = Object.keys(convs.iface).map(name => (
   }`
 ))
 
+const optional = `
+
+`
+
+
 const preamble = `
 
-var seen = {}
+var natives = []
+var converteds = []
 
 function convertGeneric(data) {
-  if (!data.description) return _convertGeneric(data)
-  if (!seen[data.description]) seen[data.description] = _convertGeneric(data)
-  return data.description
+/*
+  var idx = natives.indexOf(data)
+  if (idx !== -1) return idx
+  idx = natives.length
+  natives.push(data)
+  converteds[idx] = _convertGeneric(data)
+  return idx
 }
 
 function _convertGeneric(data) {
+*/
   ${tests[0]} else ${tests.slice(1).join(' else ')}
     // NSColor
   else if (data.redComponent && data.greenComponent) {
@@ -240,11 +277,11 @@ modal.runModal()
 var dest = modal.URL().path()
 */
 
-var dest = '/Users/jared/khan/skreact/output.json'
+var dest = '/Users/jared/khan/skreact/data/dump.js'
 
-var d = context.api().selectedDocument.selectedPage.sketchObject
-var dump = JSON.stringify({items: convertGeneric(d), seen: seen}, null, 2)
-writeFile(dest, dump)
+var d = context.api().selectedDocument.sketchObject
+var dump = JSON.stringify({root: convertGeneric(d), converteds: converteds}, null, 2)
+writeFile(dest, 'window.DATA = ' + dump)
 log('dumped!')
 `
 
