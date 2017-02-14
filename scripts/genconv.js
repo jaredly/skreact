@@ -204,7 +204,7 @@ log('dumped!')
 `
 
 const fs = require('fs')
-fs.writeFileSync('./src/stuff.js', text, 'utf8')
+fs.writeFileSync('./src/sketchExportJSON.js', text, 'utf8')
 
 console.log('unconvertable')
 console.log(general.join('\n'))
