@@ -114,6 +114,9 @@ class TreeNode extends Component  {
 
   render() {
     const {root, nodes, hover} = this.props
+    const node = nodes[root]
+    const children = node.type === 'SymbolInstance' ?
+      nodes[node.symbolId].children : node.children
     return (
       <div style={{
 
@@ -125,14 +128,15 @@ class TreeNode extends Component  {
           onClick={() => this.setState({open: !this.state.open})}
           onContextMenu={evt => this.props.onContextMenu(root, evt)}
         >
+          {children && children.length ? '> ' : null}
           {nodes[root].uniqueName}
         </div>
-        {this.state.open && nodes[root].children && <div style={{
+        {this.state.open && children && <div style={{
           paddingLeft: 5,
           borderLeft: '1px dotted #ccc',
           marginLeft: 10,
         }}>
-          {nodes[root].children.map(id => (
+          {children.map(id => (
             <TreeNode
               root={id}
               nodes={nodes}
@@ -148,10 +152,6 @@ class TreeNode extends Component  {
 } 
 
 const styles = StyleSheet.create({
-  tree: {
-    overflow: 'auto',
-    width: 200,
-  },
   treeName: {
     padding: '5px 10px',
     cursor: 'pointer',

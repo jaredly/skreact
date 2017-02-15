@@ -94,18 +94,17 @@ export default class App extends Component {
     if (!this.state.data) {
       return this.renderEmpty()
     }
-    const {nodes, idsByName} = this.state.data // processDump(window.DATA)
+    const {nodes, idsByName, components} = this.state.data
     const {currentComponent} = this.state
-    const {Component, source} = this.state.data.components[currentComponent]
+    const {Component, source} = components[currentComponent]
     const root = idsByName[Component.rootName]
-    if (!root) debugger
     return <div className={css(styles.container)}>
       <div className={css(styles.toolbar)}>
       </div>
       <div className={css(styles.main)}>
         <div className={css(styles.leftSide)}>
           <ComponentList
-            components={this.state.data.components}
+            components={components}
             selected={currentComponent}
             onSelect={currentComponent => this.setState({currentComponent})}
           />
@@ -169,7 +168,7 @@ const styles = StyleSheet.create({
 
   tree: {
     overflow: 'auto',
-    width: 200,
+    width: 300,
   },
   treeName: {
     padding: '5px 10px',
