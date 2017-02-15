@@ -43,6 +43,10 @@ export default class Node extends Component {
     domNodes: React.PropTypes.any,
   }
 
+  getNode() {
+    return this.context.data.nodes[this.props.id]
+  }
+
   render() {
     const {hide={}, props={}} = this.props
     const {nodes, idsByName, symbolIds} = this.context.data

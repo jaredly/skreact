@@ -33,7 +33,7 @@ const nodeExtraFromLayer = (layer: any) => {
       return {type: 'SymbolInstance', symbolId: layer.symbolID}
     case 'MSShapeGroup':
       if (isRectangleGroup(layer)) {
-        return {type: 'Rectangle'}
+        return {type: 'Rectangle', svgSource: layer.svgString}
       } else {
         return {type: 'ShapeGroup', svgSource: layer.svgString}
       }
@@ -67,16 +67,29 @@ const fixedSVGFrame = (frame, svgString) => {
   return {top, left, width, height}
 }
 
+const cborder = border => border && `${border.thickness}px solid ${color2string(ccolor(border.colorGeneric))}`
+
 const styleExtraFromLayer = (layer: any) => {
   switch (layer.$type) {
     case 'MSShapeGroup':
       if (isRectangleGroup(layer)) {
         const child = layer.layers[0]
+        const frame = cframe(layer.frameGeneric)
+        const border = layer.styleGeneric.borders[0]
         return {
+          ...border && border.position === 2
+            ? {
+              left: frame.left - border.thickness,
+              top: frame.top - border.thickness,
+              width: frame.width + border.thickness * 2,
+              height: frame.height + border.thickness * 2,
+            }
+            : null,
           borderRadius: child.cornerRadiusFloat,
           backgroundColor: layer.styleGeneric.fill
             ? color2string(ccolor(layer.styleGeneric.fill.colorGeneric))
             : color2string(ccolor(child.backgroundColorGeneric)),
+          border: cborder(border),
         }
       } else {
         const frame = cframe(layer.frameGeneric)

@@ -36,6 +36,7 @@ export type NodeT = ({
 } & NodeBase) | ({
   // TODO I should handle ovals as well
   type: 'Rectangle',
+  svgSource: string,
 } & NodeBase) | ({
   // TODO I should handle ovals as well
   type: 'ImportError',
