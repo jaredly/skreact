@@ -4571,7 +4571,7 @@ function convMSSymbolMasterIface(data) {
   converteds[idx] = {
     $type: "MSSymbolMaster",
 
-    svgString: generateSVGString(data),
+    svgString: generateSVGString(data) + '',
     frame: data.frame ? convMSRectIface(data.frame()) : null,
     isActive: data.isActive ? !!data.isActive() : null,
     rotation: data.rotation ? +data.rotation() : null,

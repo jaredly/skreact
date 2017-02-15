@@ -63,6 +63,12 @@ const process = (thing, parent) => {
   }
 
   switch (thing.$type) {
+    case 'MSSymbolMaster':
+      extra = {
+        svgSource: thing.svgString,
+        // layers: null,
+      }
+      break
     case 'MSArtboardGroup':
       extraStyle = {
         boxShadow: '0 1px 5px #888',

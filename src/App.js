@@ -1,68 +1,92 @@
 import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 import processDump from './process'
-
-const body = (data, symbols) => {
-  switch (data.type) {
-    case 'MSSymbolInstance':
-      return <Display data={symbols[data.orig.symbolID]}
-      inSymbol={true}
-        symbols={symbols}
-      />
-    case 'MSTextLayer':
-      return <span>{data.stringValue}</span>
-    case 'SVG':
-      return <div dangerouslySetInnerHTML={{__html: data.svgSource}} />
-  }
-
-}
-
-const Display = ({data, symbols, inSymbol}) => {
-  return <div
-    style={{
-      position: 'absolute',
-      ...data.style,
-      ...inSymbol ? {display: 'flex'} : null,
-    }}
-  >
-    {data.layers && data.layers.map((item, i) => (
-      <Display key={i} data={item} symbols={symbols} inSymbol={inSymbol} />
-    ))}
-    {body(data, symbols)}
-  </div>
-}
+import Node from './Node'
 
 export default class App extends Component {
-  constructor() {
-    super()
-    this.state = {
-      data: processDump(window.DATA),
-    }    
+  static childContextTypes = {
+    data: React.PropTypes.any,
   }
 
-  recheck() {
-    this.setState({data: processDump(window.DATA)})
+  constructor() {
+    super()
+    this.state = processDump(window.DATA)
+  }
+
+  recheck = () => {
+    this.setState(processDump(window.DATA))
+  }
+
+  getChildContext() {
+    return {
+      data: processDump(window.DATA),
+    }
   }
 
   render() {
     const {root, symbols} = processDump(window.DATA)
     return <div className={css(styles.container)}>
-      <button
-        className={css(styles.button)}
-        onClick={() => this.recheck()}
-      >Reprocess</button>
-      <Display data={root} symbols={symbols} />
+      <div className={css(styles.toolbar)}>
+        <button
+          className={css(styles.button)}
+          onClick={this.recheck}
+        >Reprocess</button>
+      </div>
+      <div className={css(styles.main)}>
+        <div className={css(styles.tree)}>
+          <Tree
+            root={root}
+            symbols={symbols}
+          />
+        </div>
+        <div className={css(styles.display)}>
+          <Node name={root.uniqueName} />
+        </div>
+      </div>
     </div>
   }
 }
 
+const Tree = ({root}) => (
+  <div style={{
+
+  }}>
+    <div style={{
+      padding: '5px 10px',
+      cursor: 'pointer',
+    }}>
+      {root.name}
+    </div>
+    <div style={{
+      paddingLeft: 5,
+      borderLeft: '1px dotted #ccc',
+      marginLeft: 10,
+    }}>
+    {root.layers && root.layers.map(child => (
+      <Tree root={child} />
+    ))}
+    </div>
+  </div>
+)
+
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#f0f0f0',
     flex: 1,
     alignSelf: 'stretch',
   },
   button: {
     cursor: 'pointer',
-  }
+  },
+  main: {
+    flexDirection: 'row',
+    flex: 1,
+  },
+  display: {
+    position: 'relative',
+    backgroundColor: '#f0f0f0',
+    flex: 1,
+  },
+  tree: {
+    overflow: 'auto',
+  },
 })
