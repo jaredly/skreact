@@ -27,8 +27,9 @@ export default class Editor extends Component {
     >
       <button
         onClick={this.save}
+        className={css(styles.button)}
       >
-        Save
+        Update component
       </button>
       <CodeMirror
         value={this.state.value}
@@ -55,5 +56,14 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 600,
   },
+  button: {
+    padding: '10px 20px',
+    backgroundColor: 'white',
+    cursor: 'pointer',
+    border: 'none',
+    ':hover': {
+      backgroundColor: '#eee',
+    }
+  }
 })
 css(styles.container)

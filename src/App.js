@@ -90,12 +90,6 @@ export default class App extends Component {
     const {Component, text} = this.state.components.App
     return <div className={css(styles.container)}>
       <div className={css(styles.toolbar)}>
-        <button
-          className={css(styles.button)}
-          onClick={this.recheck}
-        >
-          Reprocess
-        </button>
       </div>
       <div className={css(styles.main)}>
         <div className={css(styles.editor)}>

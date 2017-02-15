@@ -26,6 +26,7 @@ export default class Tree extends Component {
     this._hover = document.createElement('div')
     document.body.appendChild(this._hover)
     ext(this._hover.style, {
+      display: 'none',
       position: 'absolute',
       outline: '2px solid magenta',
       pointerEvents: 'none',

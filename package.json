@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "aphrodite": "^1.1.0",
+    "localforage": "^1.4.3",
     "react": "^15.4.2",
     "react-codemirror": "^0.3.0",
     "react-dom": "^15.4.2"
