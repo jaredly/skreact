@@ -43,15 +43,6 @@ const saveComponents = components => {
   localStorage[COMPONENTS_KEY] = JSON.stringify(texts)
 }
 
-const ext = (a, b) => {
-  const prev = {}
-  for (let n in b) {
-    prev[n] = a[n]
-    a[n] = b[n]
-  }
-  return prev
-}
-
 export default class App extends Component {
   static childContextTypes = {
     data: React.PropTypes.any,
@@ -67,18 +58,6 @@ export default class App extends Component {
       domNodes: {},
       components: loadComponents(rootName),
     }
-
-    this._hover = document.createElement('div')
-    document.body.appendChild(this._hover)
-    ext(this._hover.style, {
-      position: 'absolute',
-      outline: '2px solid magenta',
-      pointerEvents: 'none',
-      zIndex: 100000,
-    })
-    this._placeholder = document.createElement('div')
-    this._hovering = null
-    this._prevstyle = null
   }
 
   recheck = () => {
@@ -89,40 +68,6 @@ export default class App extends Component {
     return {
       data: this.state.data, // processDump(window.DATA),
       domNodes: this.state.domNodes,
-    }
-  }
-
-  hover = id => {
-    if (!id) {
-      if (!this._hovering) return
-      this._hover.style.display = 'none'
-      this._placeholder.parentNode.replaceChild(this._hovering, this._placeholder)
-      ext(this._hovering.style, this._prevstyle)
-      this._hovering = null
-    } else {
-      const node = this.state.domNodes[id]
-      if (!node) return console.log('node missing for hover', id)
-      const box = node.getBoundingClientRect()
-      this._hovering = node
-      this._prevstyle = ext(node.style, {
-        top: box.top + 'px',
-        left: box.left + 'px',
-        width: box.width + 'px',
-        height: box.height + 'px',
-        display: 'block',
-        position: 'absolute',
-        zIndex: 100000,
-        boxShadow: '0 0 10px #555',
-      })
-      ext(this._hover.style, {
-        top: box.top + 'px',
-        left: box.left + 'px',
-        width: box.width + 'px',
-        height: box.height + 'px',
-        display: 'block',
-      })
-      node.parentNode.replaceChild(this._placeholder, node)
-      document.body.appendChild(node)
     }
   }
 
@@ -164,8 +109,6 @@ export default class App extends Component {
             root={root}
             nodes={byId}
             domNodes={this.state.domNodes}
-            hover={this.hover}
-            isRoot
           />
         </div>
         <div className={css(styles.display)}>

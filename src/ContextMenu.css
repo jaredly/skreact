@@ -1,0 +1,7 @@
+
+.menu__children {
+  display: none;
+}
+.menu__item:hover > .menu__children {
+  display: block;
+}
