@@ -48,6 +48,9 @@ const extraProps = {
   'MSShapeGroup': `\n    svgString: generateSVGString(data) + '',`,
   'MSSymbolMaster': `\n    svgString: generateSVGString(data) + '',`,
 }
+const extraCode = {
+  'MSSymbolInstance': '\n    referencedSymbols[data.symbolID()] = true',
+}
 
 const disable = {
   MSTextLayer: ['baselineOffsetsValue', 'baselineOffsets', 'exportOptionsGeneric', 'influenceRectEdgePaddingsThatCascadeToContainedLayers'],
@@ -200,7 +203,7 @@ const convertIface = (name, vbl) => {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting ${name}')
+  // log('converting ${name}')
   if (!data) return null
   converteds[idx] = {
     $type: "${name}",
@@ -210,7 +213,7 @@ const convertIface = (name, vbl) => {
     // inherited
     // TODO maybe enable some time? figure out what's crashing
     ${fullin}${extraProps[name] || ''}
-  }
+  }${extraCode[name] || ''}
   return {$ref: idx}
 }`
   }
@@ -239,6 +242,7 @@ const preamble = `
 
 var natives = []
 var converteds = []
+var referencedSymbols = {}
 
 var exportFolder = '/Users/jared/tmp'
 
@@ -361,10 +365,79 @@ var dest = modal.URL().path()
 
 var dest = '/Users/jared/khan/skreact/data/dump.js'
 
-var d = context.api().selectedDocument.sketchObject
-var dump = JSON.stringify({root: convertGeneric(d), converteds: converteds}, null, 2)
-writeFile(dest, 'window.DATA = ' + dump)
-log('dumped!')
+function findArtboard(node) {
+  while (node && !(node instanceof MSArtboardGroup)) {
+    node = node.parentObject()
+  }
+  return node
+}
+
+function getSelectedArtboards(document) {
+  var selected = document.selectedLayers.nativeLayers
+  var artboards = {}
+  selected.forEach(function (node) {
+    if (!node) return
+    var artboard = findArtboard(node)
+    artboards[artboard.objectID()] = artboard
+  })
+  return Object.keys(artboards).map(function(id) {return artboards[id]})
+}
+
+function getSymbolsPage() {
+  var pages = document.sketchObject.pages()
+  for (var i=0; i<pages.length; i++) {
+    if (pages[i].name() === 'Symbols') {
+      return pages[i]
+    }
+  }
+}
+
+function processSymbols(symbolsPage, i) {
+  if (i > 100) {
+    log('help! infinite loop')
+    return
+  }
+  var foundNew = false
+  var symbols = referencedSymbols
+  referencedSymbols = {}
+  symbolsPage.layers().forEach(function (layer) {
+    if (layer.symbolID && referencedSymbols[layer.symbolID()]) {
+      if (natives.indexOf(layer) === -1) {
+        foundNew = true
+        convertGeneric(layer)
+      }
+    }
+  })
+  if (foundNew) {
+    processSymbols(symbolsPage, i+1)
+  }
+}
+
+function runExport() {
+  log('running export')
+  var document = context.api().selectedDocument
+
+  var artboards = getSelectedArtboards(document)
+  if (artboards.length !== 1) {
+    log('must have exactly one selected artboard')
+  }
+  var symbolsPage = getSymbolsPage(document)
+  if (!symbolsPage) {
+    log('failed to find symbols page')
+  }
+
+  var root = convertGeneric(artboards[0])
+
+  var dump = JSON.stringify({root: convertGeneric(d), converteds: converteds}, null, 2)
+  writeFile(dest, 'window.DATA = ' + dump)
+  log('dumped!')
+}
+
+runExport()
+`
+
+const getSingleArtboard = `
+
 `
 
 const fs = require('fs')

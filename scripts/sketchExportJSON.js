@@ -3,6 +3,7 @@
 
 var natives = []
 var converteds = []
+var referencedSymbols = {}
 
 var exportFolder = '/Users/jared/tmp'
 
@@ -459,7 +460,7 @@ function convMSDocumentIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSDocument')
+  // log('converting MSDocument')
   if (!data) return null
   converteds[idx] = {
     $type: "MSDocument",
@@ -515,7 +516,7 @@ function convMSContentDrawViewControllerIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSContentDrawViewController')
+  // log('converting MSContentDrawViewController')
   if (!data) return null
   converteds[idx] = {
     $type: "MSContentDrawViewController",
@@ -544,7 +545,7 @@ function convNSViewIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting NSView')
+  // log('converting NSView')
   if (!data) return null
   converteds[idx] = {
     $type: "NSView",
@@ -563,7 +564,7 @@ function convMSRulerViewIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSRulerView')
+  // log('converting MSRulerView')
   if (!data) return null
   converteds[idx] = {
     $type: "MSRulerView",
@@ -589,7 +590,7 @@ function convMSRulerViewLayerIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSRulerViewLayer')
+  // log('converting MSRulerViewLayer')
   if (!data) return null
   converteds[idx] = {
     $type: "MSRulerViewLayer",
@@ -616,7 +617,7 @@ function convNSColorIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting NSColor')
+  // log('converting NSColor')
   if (!data) return null
   converteds[idx] = {
     $type: "NSColor",
@@ -635,7 +636,7 @@ function convMSContentDrawViewIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSContentDrawView')
+  // log('converting MSContentDrawView')
   if (!data) return null
   converteds[idx] = {
     $type: "MSContentDrawView",
@@ -676,7 +677,7 @@ function convMSViewPortIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSViewPort')
+  // log('converting MSViewPort')
   if (!data) return null
   converteds[idx] = {
     $type: "MSViewPort",
@@ -696,7 +697,7 @@ function convMSTiledLayerPileIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSTiledLayerPile')
+  // log('converting MSTiledLayerPile')
   if (!data) return null
   converteds[idx] = {
     $type: "MSTiledLayerPile",
@@ -727,7 +728,7 @@ function convMSImmutablePageIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSImmutablePage')
+  // log('converting MSImmutablePage')
   if (!data) return null
   converteds[idx] = {
     $type: "MSImmutablePage",
@@ -797,7 +798,7 @@ function convMSExportOptionsIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSExportOptions')
+  // log('converting MSExportOptions')
   if (!data) return null
   converteds[idx] = {
     $type: "MSExportOptions",
@@ -823,7 +824,7 @@ function convMSDocumentDataIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSDocumentData')
+  // log('converting MSDocumentData')
   if (!data) return null
   converteds[idx] = {
     $type: "MSDocumentData",
@@ -866,7 +867,7 @@ function convBCCacheIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting BCCache')
+  // log('converting BCCache')
   if (!data) return null
   converteds[idx] = {
     $type: "BCCache",
@@ -886,7 +887,7 @@ function convNSSetIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting NSSet')
+  // log('converting NSSet')
   if (!data) return null
   converteds[idx] = {
     $type: "NSSet",
@@ -905,7 +906,7 @@ function convMSImageCollectionIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSImageCollection')
+  // log('converting MSImageCollection')
   if (!data) return null
   converteds[idx] = {
     $type: "MSImageCollection",
@@ -928,7 +929,7 @@ function convMSPageIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSPage')
+  // log('converting MSPage')
   if (!data) return null
   converteds[idx] = {
     $type: "MSPage",
@@ -1024,7 +1025,7 @@ function convMSArtboardGroupIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSArtboardGroup')
+  // log('converting MSArtboardGroup')
   if (!data) return null
   converteds[idx] = {
     $type: "MSArtboardGroup",
@@ -1117,7 +1118,7 @@ function convMSColorIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSColor')
+  // log('converting MSColor')
   if (!data) return null
   converteds[idx] = {
     $type: "MSColor",
@@ -1146,7 +1147,7 @@ function convMSRectIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSRect')
+  // log('converting MSRect')
   if (!data) return null
   converteds[idx] = {
     $type: "MSRect",
@@ -1188,7 +1189,7 @@ function convMSSimpleGridIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSSimpleGrid')
+  // log('converting MSSimpleGrid')
   if (!data) return null
   converteds[idx] = {
     $type: "MSSimpleGrid",
@@ -1214,7 +1215,7 @@ function convMSRulerDataIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSRulerData')
+  // log('converting MSRulerData')
   if (!data) return null
   converteds[idx] = {
     $type: "MSRulerData",
@@ -1238,7 +1239,7 @@ function convMSLayoutGridIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSLayoutGrid')
+  // log('converting MSLayoutGrid')
   if (!data) return null
   converteds[idx] = {
     $type: "MSLayoutGrid",
@@ -1275,7 +1276,7 @@ function convMSStyleIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSStyle')
+  // log('converting MSStyle')
   if (!data) return null
   converteds[idx] = {
     $type: "MSStyle",
@@ -1332,7 +1333,7 @@ function convMSTextStyleIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSTextStyle')
+  // log('converting MSTextStyle')
   if (!data) return null
   converteds[idx] = {
     $type: "MSTextStyle",
@@ -1358,7 +1359,7 @@ function convMSStyleShadowIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSStyleShadow')
+  // log('converting MSStyleShadow')
   if (!data) return null
   converteds[idx] = {
     $type: "MSStyleShadow",
@@ -1389,7 +1390,7 @@ function convMSGraphicsContextSettingsIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSGraphicsContextSettings')
+  // log('converting MSGraphicsContextSettings')
   if (!data) return null
   converteds[idx] = {
     $type: "MSGraphicsContextSettings",
@@ -1413,7 +1414,7 @@ function convMSStyleBorderIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSStyleBorder')
+  // log('converting MSStyleBorder')
   if (!data) return null
   converteds[idx] = {
     $type: "MSStyleBorder",
@@ -1445,7 +1446,7 @@ function convMSGradientIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSGradient')
+  // log('converting MSGradient')
   if (!data) return null
   converteds[idx] = {
     $type: "MSGradient",
@@ -1474,7 +1475,7 @@ function convMSStyleFillIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSStyleFill')
+  // log('converting MSStyleFill')
   if (!data) return null
   converteds[idx] = {
     $type: "MSStyleFill",
@@ -1510,7 +1511,7 @@ function convMSImageDataIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSImageData')
+  // log('converting MSImageData')
   if (!data) return null
   converteds[idx] = {
     $type: "MSImageData",
@@ -1531,7 +1532,7 @@ function convNSImageIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting NSImage')
+  // log('converting NSImage')
   if (!data) return null
   converteds[idx] = {
     $type: "NSImage",
@@ -1550,7 +1551,7 @@ function convNSDataIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting NSData')
+  // log('converting NSData')
   if (!data) return null
   converteds[idx] = {
     $type: "NSData",
@@ -1569,7 +1570,7 @@ function convMSStyleBlurIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSStyleBlur')
+  // log('converting MSStyleBlur')
   if (!data) return null
   converteds[idx] = {
     $type: "MSStyleBlur",
@@ -1596,7 +1597,7 @@ function convMSStyleBorderOptionsIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSStyleBorderOptions')
+  // log('converting MSStyleBorderOptions')
   if (!data) return null
   converteds[idx] = {
     $type: "MSStyleBorderOptions",
@@ -1623,7 +1624,7 @@ function convMSStyleColorControlsIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSStyleColorControls')
+  // log('converting MSStyleColorControls')
   if (!data) return null
   converteds[idx] = {
     $type: "MSStyleColorControls",
@@ -1650,7 +1651,7 @@ function convMSStyleReflectionIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSStyleReflection')
+  // log('converting MSStyleReflection')
   if (!data) return null
   converteds[idx] = {
     $type: "MSStyleReflection",
@@ -1675,7 +1676,7 @@ function convMSAbsoluteRectIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSAbsoluteRect')
+  // log('converting MSAbsoluteRect')
   if (!data) return null
   converteds[idx] = {
     $type: "MSAbsoluteRect",
@@ -1712,7 +1713,7 @@ function convMSLayerIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSLayer')
+  // log('converting MSLayer')
   if (!data) return null
   converteds[idx] = {
     $type: "MSLayer",
@@ -1779,7 +1780,7 @@ function convMSStyledLayerIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSStyledLayer')
+  // log('converting MSStyledLayer')
   if (!data) return null
   converteds[idx] = {
     $type: "MSStyledLayer",
@@ -1848,7 +1849,7 @@ function convNSMenuIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting NSMenu')
+  // log('converting NSMenu')
   if (!data) return null
   converteds[idx] = {
     $type: "NSMenu",
@@ -1867,7 +1868,7 @@ function convMSAssetCollectionIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSAssetCollection')
+  // log('converting MSAssetCollection')
   if (!data) return null
   converteds[idx] = {
     $type: "MSAssetCollection",
@@ -1895,7 +1896,7 @@ function convMSSharedStyleContainerIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSSharedStyleContainer')
+  // log('converting MSSharedStyleContainer')
   if (!data) return null
   converteds[idx] = {
     $type: "MSSharedStyleContainer",
@@ -1919,7 +1920,7 @@ function convMSSymbolContainerIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSSymbolContainer')
+  // log('converting MSSymbolContainer')
   if (!data) return null
   converteds[idx] = {
     $type: "MSSymbolContainer",
@@ -1943,7 +1944,7 @@ function convMSSharedTextStyleContainerIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSSharedTextStyleContainer')
+  // log('converting MSSharedTextStyleContainer')
   if (!data) return null
   converteds[idx] = {
     $type: "MSSharedTextStyleContainer",
@@ -1967,7 +1968,7 @@ function convMSImmutableSimpleGridIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSImmutableSimpleGrid')
+  // log('converting MSImmutableSimpleGrid')
   if (!data) return null
   converteds[idx] = {
     $type: "MSImmutableSimpleGrid",
@@ -1991,7 +1992,7 @@ function convMSImmutableRulerDataIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSImmutableRulerData')
+  // log('converting MSImmutableRulerData')
   if (!data) return null
   converteds[idx] = {
     $type: "MSImmutableRulerData",
@@ -2014,7 +2015,7 @@ function convMSImmutableLayoutGridIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSImmutableLayoutGrid')
+  // log('converting MSImmutableLayoutGrid')
   if (!data) return null
   converteds[idx] = {
     $type: "MSImmutableLayoutGrid",
@@ -2047,7 +2048,7 @@ function convMSImmutableStyleIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSImmutableStyle')
+  // log('converting MSImmutableStyle')
   if (!data) return null
   converteds[idx] = {
     $type: "MSImmutableStyle",
@@ -2110,7 +2111,7 @@ function convMSImmutableStyleFillIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSImmutableStyleFill')
+  // log('converting MSImmutableStyleFill')
   if (!data) return null
   converteds[idx] = {
     $type: "MSImmutableStyleFill",
@@ -2145,7 +2146,7 @@ function convMSImmutableGradientIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSImmutableGradient')
+  // log('converting MSImmutableGradient')
   if (!data) return null
   converteds[idx] = {
     $type: "MSImmutableGradient",
@@ -2173,7 +2174,7 @@ function convMSImmutableGraphicsContextSettingsIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSImmutableGraphicsContextSettings')
+  // log('converting MSImmutableGraphicsContextSettings')
   if (!data) return null
   converteds[idx] = {
     $type: "MSImmutableGraphicsContextSettings",
@@ -2196,7 +2197,7 @@ function convMSImmutableColorIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSImmutableColor')
+  // log('converting MSImmutableColor')
   if (!data) return null
   converteds[idx] = {
     $type: "MSImmutableColor",
@@ -2221,7 +2222,7 @@ function convMSImmutableStyleBorderIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSImmutableStyleBorder')
+  // log('converting MSImmutableStyleBorder')
   if (!data) return null
   converteds[idx] = {
     $type: "MSImmutableStyleBorder",
@@ -2252,7 +2253,7 @@ function convMSImmutableStyleInnerShadowIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSImmutableStyleInnerShadow')
+  // log('converting MSImmutableStyleInnerShadow')
   if (!data) return null
   converteds[idx] = {
     $type: "MSImmutableStyleInnerShadow",
@@ -2282,7 +2283,7 @@ function convMSImmutableStyleShadowIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSImmutableStyleShadow')
+  // log('converting MSImmutableStyleShadow')
   if (!data) return null
   converteds[idx] = {
     $type: "MSImmutableStyleShadow",
@@ -2312,7 +2313,7 @@ function convMSImmutableTextStyleIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSImmutableTextStyle')
+  // log('converting MSImmutableTextStyle')
   if (!data) return null
   converteds[idx] = {
     $type: "MSImmutableTextStyle",
@@ -2336,7 +2337,7 @@ function convMSImmutableStyleReflectionIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSImmutableStyleReflection')
+  // log('converting MSImmutableStyleReflection')
   if (!data) return null
   converteds[idx] = {
     $type: "MSImmutableStyleReflection",
@@ -2360,7 +2361,7 @@ function convMSImmutableStyleColorControlsIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSImmutableStyleColorControls')
+  // log('converting MSImmutableStyleColorControls')
   if (!data) return null
   converteds[idx] = {
     $type: "MSImmutableStyleColorControls",
@@ -2386,7 +2387,7 @@ function convMSImmutableStyleBorderOptionsIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSImmutableStyleBorderOptions')
+  // log('converting MSImmutableStyleBorderOptions')
   if (!data) return null
   converteds[idx] = {
     $type: "MSImmutableStyleBorderOptions",
@@ -2414,7 +2415,7 @@ function convMSImmutableStyleBlurIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSImmutableStyleBlur')
+  // log('converting MSImmutableStyleBlur')
   if (!data) return null
   converteds[idx] = {
     $type: "MSImmutableStyleBlur",
@@ -2440,7 +2441,7 @@ function convNSAffineTransformIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting NSAffineTransform')
+  // log('converting NSAffineTransform')
   if (!data) return null
   converteds[idx] = {
     $type: "NSAffineTransform",
@@ -2460,7 +2461,7 @@ function convMSImmutableRectIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSImmutableRect')
+  // log('converting MSImmutableRect')
   if (!data) return null
   converteds[idx] = {
     $type: "MSImmutableRect",
@@ -2489,7 +2490,7 @@ function convMSImmutableExportOptionsIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSImmutableExportOptions')
+  // log('converting MSImmutableExportOptions')
   if (!data) return null
   converteds[idx] = {
     $type: "MSImmutableExportOptions",
@@ -2514,7 +2515,7 @@ function convMSImmutableDocumentDataIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSImmutableDocumentData')
+  // log('converting MSImmutableDocumentData')
   if (!data) return null
   converteds[idx] = {
     $type: "MSImmutableDocumentData",
@@ -2553,7 +2554,7 @@ function convMSImmutableSharedTextStyleContainerIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSImmutableSharedTextStyleContainer')
+  // log('converting MSImmutableSharedTextStyleContainer')
   if (!data) return null
   converteds[idx] = {
     $type: "MSImmutableSharedTextStyleContainer",
@@ -2575,7 +2576,7 @@ function convMSImmutableSymbolContainerIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSImmutableSymbolContainer')
+  // log('converting MSImmutableSymbolContainer')
   if (!data) return null
   converteds[idx] = {
     $type: "MSImmutableSymbolContainer",
@@ -2597,7 +2598,7 @@ function convMSImmutableSharedStyleContainerIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSImmutableSharedStyleContainer')
+  // log('converting MSImmutableSharedStyleContainer')
   if (!data) return null
   converteds[idx] = {
     $type: "MSImmutableSharedStyleContainer",
@@ -2619,7 +2620,7 @@ function convMSImmutableAssetCollectionIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSImmutableAssetCollection')
+  // log('converting MSImmutableAssetCollection')
   if (!data) return null
   converteds[idx] = {
     $type: "MSImmutableAssetCollection",
@@ -2646,7 +2647,7 @@ function convMSImmutableImageCollectionIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSImmutableImageCollection')
+  // log('converting MSImmutableImageCollection')
   if (!data) return null
   converteds[idx] = {
     $type: "MSImmutableImageCollection",
@@ -2668,7 +2669,7 @@ function convNSMutableArrayIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting NSMutableArray')
+  // log('converting NSMutableArray')
   if (!data) return null
   converteds[idx] = {
     $type: "NSMutableArray",
@@ -2687,7 +2688,7 @@ function convMSCacheManagerIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSCacheManager')
+  // log('converting MSCacheManager')
   if (!data) return null
   converteds[idx] = {
     $type: "MSCacheManager",
@@ -2711,7 +2712,7 @@ function convMSEventHandlerManagerIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSEventHandlerManager')
+  // log('converting MSEventHandlerManager')
   if (!data) return null
   converteds[idx] = {
     $type: "MSEventHandlerManager",
@@ -2736,7 +2737,7 @@ function convMSEventHandlerIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSEventHandler')
+  // log('converting MSEventHandler')
   if (!data) return null
   converteds[idx] = {
     $type: "MSEventHandler",
@@ -2772,7 +2773,7 @@ function convMSMouseTrackerIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSMouseTracker')
+  // log('converting MSMouseTracker')
   if (!data) return null
   converteds[idx] = {
     $type: "MSMouseTracker",
@@ -2795,7 +2796,7 @@ function convMSDuplicateOffsetTrackerIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSDuplicateOffsetTracker')
+  // log('converting MSDuplicateOffsetTracker')
   if (!data) return null
   converteds[idx] = {
     $type: "MSDuplicateOffsetTracker",
@@ -2814,7 +2815,7 @@ function convMSNormalEventHandlerIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSNormalEventHandler')
+  // log('converting MSNormalEventHandler')
   if (!data) return null
   converteds[idx] = {
     $type: "MSNormalEventHandler",
@@ -2859,7 +2860,7 @@ function convMSDragToMoveOrCopyGestureRecognizerIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSDragToMoveOrCopyGestureRecognizer')
+  // log('converting MSDragToMoveOrCopyGestureRecognizer')
   if (!data) return null
   converteds[idx] = {
     $type: "MSDragToMoveOrCopyGestureRecognizer",
@@ -2893,7 +2894,7 @@ function convMSDragToSelectGestureRecognizerIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSDragToSelectGestureRecognizer')
+  // log('converting MSDragToSelectGestureRecognizer')
   if (!data) return null
   converteds[idx] = {
     $type: "MSDragToSelectGestureRecognizer",
@@ -2919,7 +2920,7 @@ function convMSOpacityKeyboardShortcutRecognizerIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSOpacityKeyboardShortcutRecognizer')
+  // log('converting MSOpacityKeyboardShortcutRecognizer')
   if (!data) return null
   converteds[idx] = {
     $type: "MSOpacityKeyboardShortcutRecognizer",
@@ -2941,7 +2942,7 @@ function convMSNormalEventDataIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSNormalEventData')
+  // log('converting MSNormalEventData')
   if (!data) return null
   converteds[idx] = {
     $type: "MSNormalEventData",
@@ -2968,7 +2969,7 @@ function convMSSnapperDataIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSSnapperData')
+  // log('converting MSSnapperData')
   if (!data) return null
   converteds[idx] = {
     $type: "MSSnapperData",
@@ -2989,7 +2990,7 @@ function convNSMutableDictionaryIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting NSMutableDictionary')
+  // log('converting NSMutableDictionary')
   if (!data) return null
   converteds[idx] = {
     $type: "NSMutableDictionary",
@@ -3008,7 +3009,7 @@ function convMSNormalEventContextualMenuBuilderIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSNormalEventContextualMenuBuilder')
+  // log('converting MSNormalEventContextualMenuBuilder')
   if (!data) return null
   converteds[idx] = {
     $type: "MSNormalEventContextualMenuBuilder",
@@ -3035,7 +3036,7 @@ function convMSLayerArrayIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSLayerArray')
+  // log('converting MSLayerArray')
   if (!data) return null
   converteds[idx] = {
     $type: "MSLayerArray",
@@ -3054,7 +3055,7 @@ function convMSBackButtonWindowControllerIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSBackButtonWindowController')
+  // log('converting MSBackButtonWindowController')
   if (!data) return null
   converteds[idx] = {
     $type: "MSBackButtonWindowController",
@@ -3075,7 +3076,7 @@ function convNSTimerIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting NSTimer')
+  // log('converting NSTimer')
   if (!data) return null
   converteds[idx] = {
     $type: "NSTimer",
@@ -3094,7 +3095,7 @@ function convNSMutableSetIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting NSMutableSet')
+  // log('converting NSMutableSet')
   if (!data) return null
   converteds[idx] = {
     $type: "NSMutableSet",
@@ -3113,7 +3114,7 @@ function convBCSideBarViewControllerIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting BCSideBarViewController')
+  // log('converting BCSideBarViewController')
   if (!data) return null
   converteds[idx] = {
     $type: "BCSideBarViewController",
@@ -3154,7 +3155,7 @@ function convBCOutlineViewControllerIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting BCOutlineViewController')
+  // log('converting BCOutlineViewController')
   if (!data) return null
   converteds[idx] = {
     $type: "BCOutlineViewController",
@@ -3194,7 +3195,7 @@ function convNSTextFieldIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting NSTextField')
+  // log('converting NSTextField')
   if (!data) return null
   converteds[idx] = {
     $type: "NSTextField",
@@ -3213,7 +3214,7 @@ function convNSEventIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting NSEvent')
+  // log('converting NSEvent')
   if (!data) return null
   converteds[idx] = {
     $type: "NSEvent",
@@ -3232,7 +3233,7 @@ function convBCOutlineViewDataControllerIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting BCOutlineViewDataController')
+  // log('converting BCOutlineViewDataController')
   if (!data) return null
   converteds[idx] = {
     $type: "BCOutlineViewDataController",
@@ -3259,7 +3260,7 @@ function convBCFilterInfoIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting BCFilterInfo')
+  // log('converting BCFilterInfo')
   if (!data) return null
   converteds[idx] = {
     $type: "BCFilterInfo",
@@ -3282,7 +3283,7 @@ function convBCOutlineViewIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting BCOutlineView')
+  // log('converting BCOutlineView')
   if (!data) return null
   converteds[idx] = {
     $type: "BCOutlineView",
@@ -3305,7 +3306,7 @@ function convBCPageListViewControllerIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting BCPageListViewController')
+  // log('converting BCPageListViewController')
   if (!data) return null
   converteds[idx] = {
     $type: "BCPageListViewController",
@@ -3346,7 +3347,7 @@ function convBCTableCellViewIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting BCTableCellView')
+  // log('converting BCTableCellView')
   if (!data) return null
   converteds[idx] = {
     $type: "BCTableCellView",
@@ -3379,7 +3380,7 @@ function convBCCollapsableImageViewIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting BCCollapsableImageView')
+  // log('converting BCCollapsableImageView')
   if (!data) return null
   converteds[idx] = {
     $type: "BCCollapsableImageView",
@@ -3400,7 +3401,7 @@ function convNSWindowIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting NSWindow')
+  // log('converting NSWindow')
   if (!data) return null
   converteds[idx] = {
     $type: "NSWindow",
@@ -3419,7 +3420,7 @@ function convMSFontListIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSFontList')
+  // log('converting MSFontList')
   if (!data) return null
   converteds[idx] = {
     $type: "MSFontList",
@@ -3441,7 +3442,7 @@ function convMSInspectorControllerIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSInspectorController')
+  // log('converting MSInspectorController')
   if (!data) return null
   converteds[idx] = {
     $type: "MSInspectorController",
@@ -3471,7 +3472,7 @@ function convMSExportInspectorViewControllerIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSExportInspectorViewController')
+  // log('converting MSExportInspectorViewController')
   if (!data) return null
   converteds[idx] = {
     $type: "MSExportInspectorViewController",
@@ -3511,7 +3512,7 @@ function convMSShareButtonHandlerIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSShareButtonHandler')
+  // log('converting MSShareButtonHandler')
   if (!data) return null
   converteds[idx] = {
     $type: "MSShareButtonHandler",
@@ -3534,7 +3535,7 @@ function convBCPopoverIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting BCPopover')
+  // log('converting BCPopover')
   if (!data) return null
   converteds[idx] = {
     $type: "BCPopover",
@@ -3561,7 +3562,7 @@ function convBCPopoverWindowIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting BCPopoverWindow')
+  // log('converting BCPopoverWindow')
   if (!data) return null
   converteds[idx] = {
     $type: "BCPopoverWindow",
@@ -3581,7 +3582,7 @@ function convNSViewControllerIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting NSViewController')
+  // log('converting NSViewController')
   if (!data) return null
   converteds[idx] = {
     $type: "NSViewController",
@@ -3600,7 +3601,7 @@ function convMSColorPreviewButtonIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSColorPreviewButton')
+  // log('converting MSColorPreviewButton')
   if (!data) return null
   converteds[idx] = {
     $type: "MSColorPreviewButton",
@@ -3621,7 +3622,7 @@ function convMSStyleBasicFillIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSStyleBasicFill')
+  // log('converting MSStyleBasicFill')
   if (!data) return null
   converteds[idx] = {
     $type: "MSStyleBasicFill",
@@ -3651,7 +3652,7 @@ function convMSArtboardInspectorViewControllerIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSArtboardInspectorViewController')
+  // log('converting MSArtboardInspectorViewController')
   if (!data) return null
   converteds[idx] = {
     $type: "MSArtboardInspectorViewController",
@@ -3681,7 +3682,7 @@ function convMSFlippedViewIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSFlippedView')
+  // log('converting MSFlippedView')
   if (!data) return null
   converteds[idx] = {
     $type: "MSFlippedView",
@@ -3700,7 +3701,7 @@ function convMSInspectorStackViewIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSInspectorStackView')
+  // log('converting MSInspectorStackView')
   if (!data) return null
   converteds[idx] = {
     $type: "MSInspectorStackView",
@@ -3719,7 +3720,7 @@ function convMSSliceInspectorViewControllerIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSSliceInspectorViewController')
+  // log('converting MSSliceInspectorViewController')
   if (!data) return null
   converteds[idx] = {
     $type: "MSSliceInspectorViewController",
@@ -3750,7 +3751,7 @@ function convMSNormalInspectorIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSNormalInspector')
+  // log('converting MSNormalInspector')
   if (!data) return null
   converteds[idx] = {
     $type: "MSNormalInspector",
@@ -3774,7 +3775,7 @@ function convMSPersistentAssetCollectionIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSPersistentAssetCollection')
+  // log('converting MSPersistentAssetCollection')
   if (!data) return null
   converteds[idx] = {
     $type: "MSPersistentAssetCollection",
@@ -3803,7 +3804,7 @@ function convMSVersionedArchiveIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSVersionedArchive')
+  // log('converting MSVersionedArchive')
   if (!data) return null
   converteds[idx] = {
     $type: "MSVersionedArchive",
@@ -3826,7 +3827,7 @@ function convNSURLIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting NSURL')
+  // log('converting NSURL')
   if (!data) return null
   converteds[idx] = {
     $type: "NSURL",
@@ -3845,7 +3846,7 @@ function convMSHistoryMakerIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSHistoryMaker')
+  // log('converting MSHistoryMaker')
   if (!data) return null
   converteds[idx] = {
     $type: "MSHistoryMaker",
@@ -3870,7 +3871,7 @@ function convMSHistoryIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSHistory')
+  // log('converting MSHistory')
   if (!data) return null
   converteds[idx] = {
     $type: "MSHistory",
@@ -3897,7 +3898,7 @@ function convMSMomentIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSMoment')
+  // log('converting MSMoment')
   if (!data) return null
   converteds[idx] = {
     $type: "MSMoment",
@@ -3919,7 +3920,7 @@ function convMSActionControllerIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSActionController')
+  // log('converting MSActionController')
   if (!data) return null
   converteds[idx] = {
     $type: "MSActionController",
@@ -3939,7 +3940,7 @@ function convMSToolbarConstructorIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSToolbarConstructor')
+  // log('converting MSToolbarConstructor')
   if (!data) return null
   converteds[idx] = {
     $type: "MSToolbarConstructor",
@@ -3960,7 +3961,7 @@ function convMSMainSplitViewControllerIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSMainSplitViewController')
+  // log('converting MSMainSplitViewController')
   if (!data) return null
   converteds[idx] = {
     $type: "MSMainSplitViewController",
@@ -3986,7 +3987,7 @@ function convMSShapeGroupIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSShapeGroup')
+  // log('converting MSShapeGroup')
   if (!data) return null
   converteds[idx] = {
     $type: "MSShapeGroup",
@@ -4080,7 +4081,7 @@ function convNSBezierPathIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting NSBezierPath')
+  // log('converting NSBezierPath')
   if (!data) return null
   converteds[idx] = {
     $type: "NSBezierPath",
@@ -4099,7 +4100,7 @@ function convMSPathIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSPath')
+  // log('converting MSPath')
   if (!data) return null
   converteds[idx] = {
     $type: "MSPath",
@@ -4124,7 +4125,7 @@ function convMSTextLayerIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSTextLayer')
+  // log('converting MSTextLayer')
   if (!data) return null
   converteds[idx] = {
     $type: "MSTextLayer",
@@ -4216,7 +4217,7 @@ function convNSAttributedStringIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting NSAttributedString')
+  // log('converting NSAttributedString')
   if (!data) return null
   converteds[idx] = {
     $type: "NSAttributedString",
@@ -4235,7 +4236,7 @@ function convMSAttributedStringIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSAttributedString')
+  // log('converting MSAttributedString')
   if (!data) return null
   converteds[idx] = {
     $type: "MSAttributedString",
@@ -4260,7 +4261,7 @@ function convMSOvalShapeIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSOvalShape')
+  // log('converting MSOvalShape')
   if (!data) return null
   converteds[idx] = {
     $type: "MSOvalShape",
@@ -4334,7 +4335,7 @@ function convMSShapePathIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSShapePath')
+  // log('converting MSShapePath')
   if (!data) return null
   converteds[idx] = {
     $type: "MSShapePath",
@@ -4359,7 +4360,7 @@ function convMSRectangleShapeIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSRectangleShape')
+  // log('converting MSRectangleShape')
   if (!data) return null
   converteds[idx] = {
     $type: "MSRectangleShape",
@@ -4438,7 +4439,7 @@ function convMSShapePathLayerIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSShapePathLayer')
+  // log('converting MSShapePathLayer')
   if (!data) return null
   converteds[idx] = {
     $type: "MSShapePathLayer",
@@ -4512,7 +4513,7 @@ function convMSCurvePointIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSCurvePoint')
+  // log('converting MSCurvePoint')
   if (!data) return null
   converteds[idx] = {
     $type: "MSCurvePoint",
@@ -4541,7 +4542,7 @@ function convMSLayerGroupIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSLayerGroup')
+  // log('converting MSLayerGroup')
   if (!data) return null
   converteds[idx] = {
     $type: "MSLayerGroup",
@@ -4618,7 +4619,7 @@ function convMSSymbolInstanceIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSSymbolInstance')
+  // log('converting MSSymbolInstance')
   if (!data) return null
   converteds[idx] = {
     $type: "MSSymbolInstance",
@@ -4635,6 +4636,7 @@ function convMSSymbolInstanceIface(data) {
     rect: data.rect ? convCGRectStruct(data.rect()) : null,
     nodeName: data.nodeName ? data.nodeName() + '' : null,
   }
+    referencedSymbols[data.symbolID()] = true
   return {$ref: idx}
 }
 
@@ -4643,7 +4645,7 @@ function convMSSymbolMasterIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSSymbolMaster')
+  // log('converting MSSymbolMaster')
   if (!data) return null
   converteds[idx] = {
     $type: "MSSymbolMaster",
@@ -4681,7 +4683,7 @@ function convMSImmutableSymbolMasterIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSImmutableSymbolMaster')
+  // log('converting MSImmutableSymbolMaster')
   if (!data) return null
   converteds[idx] = {
     $type: "MSImmutableSymbolMaster",
@@ -4756,7 +4758,7 @@ function convMSImmutableSharedStyleIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSImmutableSharedStyle')
+  // log('converting MSImmutableSharedStyle')
   if (!data) return null
   converteds[idx] = {
     $type: "MSImmutableSharedStyle",
@@ -4780,7 +4782,7 @@ function convMSModelObjectCommonIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSModelObjectCommon')
+  // log('converting MSModelObjectCommon')
   if (!data) return null
   converteds[idx] = {
     $type: "MSModelObjectCommon",
@@ -4801,7 +4803,7 @@ function convMSImmutableModelObjectIface(data) {
   if (idx !== -1) return {$ref: idx}
   idx = natives.length
   natives.push(data)
-  log('converting MSImmutableModelObject')
+  // log('converting MSImmutableModelObject')
   if (!data) return null
   converteds[idx] = {
     $type: "MSImmutableModelObject",
@@ -4831,7 +4833,72 @@ var dest = modal.URL().path()
 
 var dest = '/Users/jared/khan/skreact/data/dump.js'
 
-var d = context.api().selectedDocument.sketchObject
-var dump = JSON.stringify({root: convertGeneric(d), converteds: converteds}, null, 2)
-writeFile(dest, 'window.DATA = ' + dump)
-log('dumped!')
+function findArtboard(node) {
+  while (node && !(node instanceof MSArtboardGroup)) {
+    node = node.parentObject()
+  }
+  return node
+}
+
+function getSelectedArtboards(document) {
+  var selected = document.selectedLayers.nativeLayers
+  var artboards = {}
+  selected.forEach(function (node) {
+    if (!node) return
+    var artboard = findArtboard(node)
+    artboards[artboard.objectID()] = artboard
+  })
+  return Object.keys(artboards).map(function(id) {return artboards[id]})
+}
+
+function getSymbolsPage() {
+  var pages = document.sketchObject.pages()
+  for (var i=0; i<pages.length; i++) {
+    if (pages[i].name() === 'Symbols') {
+      return pages[i]
+    }
+  }
+}
+
+function processSymbols(symbolsPage, i) {
+  if (i > 100) {
+    log('help! infinite loop')
+    return
+  }
+  var foundNew = false
+  var symbols = referencedSymbols
+  referencedSymbols = {}
+  symbolsPage.layers().forEach(function (layer) {
+    if (layer.symbolID && referencedSymbols[layer.symbolID()]) {
+      if (natives.indexOf(layer) === -1) {
+        foundNew = true
+        convertGeneric(layer)
+      }
+    }
+  })
+  if (foundNew) {
+    processSymbols(symbolsPage, i+1)
+  }
+}
+
+function runExport() {
+  log('running export')
+  var document = context.api().selectedDocument
+
+  var artboards = getSelectedArtboards(document)
+  if (artboards.length !== 1) {
+    log('must have exactly one selected artboard')
+  }
+  var symbolsPage = getSymbolsPage(document)
+  if (!symbolsPage) {
+    log('failed to find symbols page')
+  }
+
+  var root = convertGeneric(artboards[0])
+
+  var dump = JSON.stringify({root: convertGeneric(d), converteds: converteds}, null, 2)
+  writeFile(dest, 'window.DATA = ' + dump)
+  log('dumped!')
+}
+
+runExport()
