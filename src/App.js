@@ -11,6 +11,8 @@ const body = (data, symbols) => {
       />
     case 'MSTextLayer':
       return <span>{data.stringValue}</span>
+    case 'SVG':
+      return <div dangerouslySetInnerHTML={{__html: data.svgSource}} />
   }
 
 }

@@ -44,6 +44,10 @@ const clearedForInheritance = [
     borders: convertArray(data.borders()),
    */
 
+const extraCode = {
+  // 'MSShapeGroup': `result.svgString = generateSVGString(data)`
+}
+
 const disable = {
   MSTextLayer: ['baselineOffsetsValue', 'baselineOffsets', 'exportOptionsGeneric', 'influenceRectEdgePaddingsThatCascadeToContainedLayers'],
   // MSPage: ['cachedArtboards', 'cachedExportableLayers', 'currentArtboard', 'layers'],
@@ -51,6 +55,7 @@ const disable = {
   MSContentDrawView: ['zoomTool'],
   MSNormalEventHandler: ['positionDrawing'],
   MSImmutableSymbolMaster: ['influenceRectEdgePaddingsThatDoNotCascade'],
+  BCOutlineViewDataController: ['currentlyHoveredView'],
 }
 
 const globalDisable = [
@@ -158,7 +163,7 @@ const convertIface = (name, vbl) => {
   natives.push(data)
   log('converting ${name}')
   if (!data) return null
-  converteds[idx] = {
+  var result = {
     $type: "${name}",
     ${attrs.join('\n    ')}
 
@@ -166,6 +171,8 @@ const convertIface = (name, vbl) => {
     // TODO maybe enable some time? figure out what's crashing
     ${fullin}
   }
+  ${extraCode[name] || ''}
+  converteds[idx] = result
   return {$ref: idx}
 }`
   }
@@ -194,6 +201,43 @@ const preamble = `
 
 var natives = []
 var converteds = []
+
+var exportFolder = '/Users/jared/tmp'
+
+function nameForScale(scale) {
+	return (scale > 1) ? "@" + scale + "x" : "";
+}
+
+function deleteFile(name) {
+  var fileManager = [NSFileManager defaultManager];
+  [fileManager removeItemAtPath:name error:nil];
+}
+
+function exportImageForLayer(layer, exportPath, imageFormat, imageScales) {
+  var filePaths = [];
+  var formats = imageScales.map(function(scale) {
+    return [MSExportFormat formatWithScale:scale name:nameForScale(scale) fileFormat:imageFormat];
+  });
+  var requests = [MSExportRequest exportRequestsFromExportableLayer:layer exportFormats:formats useIDForName: false];
+  requests.forEach(function(request) {
+    var filePath = exportPath + request.name() + "." + request.format();
+    filePaths.push(filePath);
+    [doc saveExportRequest:request toFile: filePath];
+  });
+  return filePaths;
+}
+
+function generateSVGString(layer) {
+  var filePaths = exportImageForLayer(layer, exportFolder, 'svg', [1]);
+  var filePath = filePaths[0]
+  if (!filePath) {
+    return log("WWWWWAAT")
+  }
+  var fileUrl = [NSURL fileURLWithPath:filePath];
+  var src = [[NSString alloc] initWithContentsOfURL:fileUrl];
+  deleteFile(filePath);
+  return src
+}
 
 function convertGeneric(data) {
 /*

@@ -26,7 +26,7 @@ const process = (thing, parent) => {
     display: thing.isVisible !== false ? 'flex' : 'none',
     ...cframe(thing.frameGeneric),
     backgroundColor: color2string(ccolor(thing.backgroundColorGeneric)),
-    borderRadius: thing.corderRadiusFloat,
+    borderRadius: thing.cornerRadiusFloat,
     boxShadow: thing.styleGeneric && thing.styleGeneric.shadow ? cshadow(thing.styleGeneric.shadow) : null,
     opacity: thing.styleGeneric && thing.styleGeneric.contextSettingsGeneric ? thing.styleGeneric.contextSettingsGeneric.opacity : undefined,
   }
@@ -41,11 +41,22 @@ const process = (thing, parent) => {
         childName: child.name,
         style: {
           ...style,
-          borderRadius: child.corderRadiusFloat,
+          borderRadius: child.cornerRadiusFloat,
           backgroundColor: thing.styleGeneric.fill
             ? color2string(ccolor(thing.styleGeneric.fill.colorGeneric))
             : color2string(ccolor(child.backgroundColorGeneric)),
         },
+        orig: thing,
+      }
+    } else {
+      return {
+        type: 'SVG',
+        name: thing.name,
+        style: {
+          ...style,
+        },
+        backgroundColor: thing.styleGeneric.fill ? color2string(ccolor(thing.styleGeneric.fill.colorGeneric)) : null,
+        svgSource: thing.svgString,
         orig: thing,
       }
     }

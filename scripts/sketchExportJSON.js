@@ -4,6 +4,44 @@
 var natives = []
 var converteds = []
 
+var exportFolder = '/Users/jared/tmp'
+
+function nameForScale(scale) {
+	return (scale > 1) ? "@" + scale + "x" : "";
+}
+
+function deleteFile(name) {
+  var fileManager = [NSFileManager defaultManager];
+  [fileManager removeItemAtPath:name error:nil];
+}
+
+function exportImageForLayer(layer, exportPath, imageFormat, imageScales) {
+  var filePaths = [];
+  var formats = imageScales.map(function(scale) {
+    return [MSExportFormat formatWithScale:scale name:nameForScale(scale) fileFormat:imageFormat];
+  });
+  var requests = [MSExportRequest exportRequestsFromExportableLayer:layer exportFormats:formats useIDForName: false];
+  requests.forEach(function(request) {
+    var filePath = exportPath + request.name() + "." + request.format();
+    filePaths.push(filePath);
+    [doc saveExportRequest:request toFile: filePath];
+  });
+  return filePaths;
+}
+
+function generateSVGString(layer) {
+  var filePaths = exportImageForLayer(layer, exportFolder, 'svg', [1]);
+  var filePath = filePaths[0]
+  if (!filePath) {
+    return log("WWWWWAAT")
+  }
+  var fileUrl = [NSURL fileURLWithPath:filePath];
+  var src = [[NSString alloc] initWithContentsOfURL:fileUrl];
+  deleteFile(filePath);
+  return src
+}
+
+
 function convertGeneric(data) {
 /*
   var idx = natives.indexOf(data)
@@ -3049,7 +3087,7 @@ function convBCOutlineViewControllerIface(data) {
     arePreviewImagesDirty: data.arePreviewImagesDirty ? !!data.arePreviewImagesDirty() : null,
     isExpansionDirty: data.isExpansionDirty ? !!data.isExpansionDirty() : null,
     isSelectionDirty: data.isSelectionDirty ? !!data.isSelectionDirty() : null,
-    currentlyHoveredView: data.currentlyHoveredView ? convBCTableCellViewIface(data.currentlyHoveredView()) : null,
+    // currentlyHoveredView: data.currentlyHoveredView ? convBCTableCellViewIface(data.currentlyHoveredView()) : null,
     filter: data.filter ? convBCFilterInfoIface(data.filter()) : null,
     selectedItems: data.selectedItems ? convertArray(data.selectedItems()) : null,
     hasSourceListStyle: data.hasSourceListStyle ? !!data.hasSourceListStyle() : null,
@@ -3833,6 +3871,7 @@ function convMSShapeGroupIface(data) {
   if (!data) return null
   converteds[idx] = {
     $type: "MSShapeGroup",
+    svgString: generateSVGString(data) + '',
     isPartOfClippingMask: data.isPartOfClippingMask ? !!data.isPartOfClippingMask() : null,
     isClosed: data.isClosed ? !!data.isClosed() : null,
     bezierPath: data.bezierPath ? convNSBezierPathIface(data.bezierPath()) : null,
@@ -4532,6 +4571,7 @@ function convMSSymbolMasterIface(data) {
   converteds[idx] = {
     $type: "MSSymbolMaster",
 
+    svgString: generateSVGString(data),
     frame: data.frame ? convMSRectIface(data.frame()) : null,
     isActive: data.isActive ? !!data.isActive() : null,
     rotation: data.rotation ? +data.rotation() : null,
