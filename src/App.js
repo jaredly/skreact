@@ -2,6 +2,9 @@ import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 import processDump from './process'
 import Node from './Node'
+import Editor from './Editor'
+import Tree from './Tree'
+import defaultCode from './template'
 
 const ext = (a, b) => {
   const prev = {}
@@ -20,7 +23,19 @@ export default class App extends Component {
 
   constructor() {
     super()
-    this.state = {data: processDump(window.DATA), domNodes: {}}
+    const data = processDump(window.DATA)
+    const rootName = data.byId[data.root].uniqueName
+    this.state = {
+      data,
+      domNodes: {},
+      components: {
+        [rootName]: {
+          text: defaultCode(rootName),
+          Component: () => <Node name={rootName} />,
+        }
+      }
+    }
+
     this._hover = document.createElement('div')
     document.body.appendChild(this._hover)
     ext(this._hover.style, {
@@ -91,6 +106,9 @@ export default class App extends Component {
       </div>
       <div className={css(styles.main)}>
         <div className={css(styles.editor)}>
+          <Editor
+            text={"hello"}
+          />
         </div>
         <div className={css(styles.tree)}>
           <Tree
@@ -108,47 +126,6 @@ export default class App extends Component {
     </div>
   }
 }
-
-class Tree extends Component  {
-  constructor(props) {
-    super()
-    this.state = {
-      open: props.isRoot,
-    }
-  }
-
-  render() {
-    const {root, nodes, hover} = this.props
-    return (
-      <div style={{
-
-      }}>
-        <div
-          onMouseOver={() => hover(root)}
-          onMouseOut={() => hover(null)}
-          className={css(styles.treeName)}
-          onClick={() => this.setState({open: !this.state.open})}
-        >
-          {nodes[root].uniqueName}
-        </div>
-        {this.state.open && <div style={{
-          paddingLeft: 5,
-          borderLeft: '1px dotted #ccc',
-          marginLeft: 10,
-        }}>
-          {nodes[root].children.map(child => (
-            <Tree
-              root={child.id}
-              nodes={nodes}
-              key={child.id}
-              hover={this.props.hover}
-            />
-          ))}
-        </div>}
-      </div>
-    )
-  }
-} 
 
 const styles = StyleSheet.create({
   container: {

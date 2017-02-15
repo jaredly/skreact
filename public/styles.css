@@ -27,3 +27,8 @@ input {
     right: 0;
     bottom: 0;
 }
+
+.CodeMirror {
+    height: auto!important;
+    flex: 1!important;
+}

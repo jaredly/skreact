@@ -16,6 +16,25 @@ const body = (node, symbols) => {
   }
 }
 
+const renderTree = (id, byId, domNodes, symbols) => {
+  const node = byId[id]
+  if (!node) return <span>Node not found</span>
+  return <div
+    ref={domNode => domNodes[node.id] = domNode}
+    key={id}
+    style={{
+      position: 'absolute',
+      ...node.style,
+      // ...inSymbol ? { display: 'flex' } : null,
+    }}
+  >
+    {node.children && node.children.map(child => (
+      renderTree(child.id, byId, domNodes, symbols)
+    ))}
+    {body(node, symbols)}
+  </div>
+}
+
 export default class Node extends Component {
   static contextTypes = {
     data: React.PropTypes.any,
@@ -23,23 +42,9 @@ export default class Node extends Component {
   }
 
   render() {
-    const data = this.context.data
-    const node = this.props.id ? data.byId[this.props.id] : data.byName[this.props.name]
-    if (!node) return <span>Node not found</span>
-    // inSymbol
-    return <div
-      ref={domNode => this.context.domNodes[node.id] = domNode}
-      style={{
-        position: 'absolute',
-        ...node.style,
-        // ...inSymbol ? { display: 'flex' } : null,
-      }}
-    >
-      {node.children && node.children.map(child => (
-        <Node key={child.id} id={child.id} />
-      ))}
-      {body(node, data.symbols)}
-    </div>
+    const {byId, byName, symbols} = this.context.data
+    const node = this.props.id ? byId[this.props.id] : byName[this.props.name]
+    return renderTree(node.id, byId, this.context.domNodes, symbols)
   }
 }
 

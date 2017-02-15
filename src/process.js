@@ -53,6 +53,22 @@ const nodeFromLayer = thing => {
         },
       }
     } else {
+      const match = thing.svgString.match(/width="(\d+)px" height="(\d+)px"/) 
+      if (!match) {
+        console.log(thing.svgString)
+        throw new Error('failed to find svg dims')
+      }
+      let [_, width, height] = match
+      width = +width
+      height = +height
+      if (width > style.width) {
+        style.left -= (width - style.width) / 2
+        style.width = width
+      }
+      if (height > style.height) {
+        style.top -= (height - style.height) / 2
+        style.height = height
+      }
       return {
         type: 'SVG',
         name: thing.name,
@@ -75,6 +91,11 @@ const nodeFromLayer = thing => {
       extra = {
         svgSource: thing.svgString,
         // layers: null,
+      }
+      const match = thing.svgString.match(/width="(\d+)px" height="(\d+)px"/) 
+      if (match) {
+        extra.svgWidth = +match[1]
+        extra.svgHeight = +match[2]
       }
       break
     case 'MSArtboardGroup':
@@ -138,7 +159,6 @@ function processDump({root, converteds}) {
   const byId = {}
   const byName = {}
   inflate(converteds, symbols)
-  console.log(symbols)
   for (let id in symbols) {
     symbols[id] = processLayer(symbols[id], byId, byName)
   }
