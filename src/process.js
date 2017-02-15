@@ -1,4 +1,8 @@
 
+import inflate from './inflateDump'
+
+const color2string = color => color && `rgba(${color.r * 255}, ${color.g * 255}, ${color.b * 255}, ${color.a})`
+
 const cframe = frame => frame && ({
   top: frame.top,
   left: frame.left,
@@ -16,7 +20,8 @@ const ccolor = color => color && {
 const cshadow = shadow => shadow &&
   `${shadow.offsetX}px ${shadow.offsetY}px ${shadow.blurRadius}px ${color2string(ccolor(shadow.colorGeneric))}`
 
-const process = (thing, parent) => {
+// dunno if this needs to change, but here we are
+const nodeFromLayer = thing => {
   let extra = {}
   let extraStyle = {
       // outline: '1px solid magenta',
@@ -46,7 +51,6 @@ const process = (thing, parent) => {
             ? color2string(ccolor(thing.styleGeneric.fill.colorGeneric))
             : color2string(ccolor(child.backgroundColorGeneric)),
         },
-        orig: thing,
       }
     } else {
       return {
@@ -57,12 +61,16 @@ const process = (thing, parent) => {
         },
         backgroundColor: thing.styleGeneric.fill ? color2string(ccolor(thing.styleGeneric.fill.colorGeneric)) : null,
         svgSource: thing.svgString,
-        orig: thing,
       }
     }
   }
 
   switch (thing.$type) {
+    case 'MSSymbolInstance':
+      extra = {
+        symbolId: thing.symbolID,
+      }
+      break
     case 'MSSymbolMaster':
       extra = {
         svgSource: thing.svgString,
@@ -99,47 +107,50 @@ const process = (thing, parent) => {
     },
     frame: cframe(thing.frameGeneric),
     background: ccolor(thing.backgroundColorGeneric),
-    layers: thing.layers && thing.layers.map(child => process(child, thing)),
-    orig: thing,
     ...extra,
   }
 }
 
-function inflate(converteds, symbols) {
-  for (let i = 0; i < converteds.length; i++) {
-    const node = converteds[i]
-    if (node && node.$type === 'MSSymbolMaster') {
-      symbols[node.symbolID] = node
-    }
-    for (let name in node) {
-      if (node[name] && node[name].$ref) {
-        node[name] = converteds[node[name].$ref]
-      } else if (Array.isArray(node[name])) {
-        node[name] = node[name].map(item => item && item.$ref ? converteds[item.$ref] : item)
-      } else if (node[name] && 'object' === typeof node[name]) {
-        for (let sub in node[name]) {
-          if (node[name][sub] && node[name][sub].$ref) {
-            node[name][sub] = converteds[node[name][sub].$ref]
-          }
-        }
-      }
-    }
+const processLayer = (layer, byId, byName) => {
+  if (byId[layer.objectID]) return layer.objectID // already processed
+  const uniqueName = findUniqueName(layer.name, byName)
+  const node = nodeFromLayer(layer)
+  node.layer = layer
+  node.uniqueName = uniqueName
+  node.id = layer.objectID
+  node.children = layer.layers ? layer.layers.map(layer => processLayer(layer, byId, byName)) : []
+  byName[uniqueName] = node
+  byId[node.id] = node
+  return node.id
+}
+
+function findUniqueName(name, byName) {
+  if (!byName[name]) return name
+  for (let i=0; i<100000; i++) {
+    const tmp = name + i
+    if (!byName[tmp]) return tmp
   }
+  throw new Error("no unique name for " + name)
 }
 
 function processDump({root, converteds}) {
   const symbols = {}
+  const byId = {}
+  const byName = {}
   inflate(converteds, symbols)
+  console.log(symbols)
   for (let id in symbols) {
-    symbols[id] = process(symbols[id])
+    symbols[id] = processLayer(symbols[id], byId, byName)
   }
   console.log('ha')
   const doc = converteds[0]
   const page = doc.documentData.pages[0]
   const artboard = page.artboards[0] // TODO process all
-  return { root: process(artboard), symbols }
+  const nodes = {}
+  const id = processLayer(artboard, byId, byName)
+  const res =  { root: id, symbols, byId, byName }
+  window.RES = res
+  return res
 }
 
 export default processDump
-
-const color2string = color => color && `rgba(${color.r * 255}, ${color.g * 255}, ${color.b * 255}, ${color.a})`

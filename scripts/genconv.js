@@ -72,6 +72,7 @@ const whitelist = {
     'rect',
   ],
   MSSymbolMaster: [
+    'symbolID',
     'svgString',
     'frame',
     'isActive',
@@ -203,7 +204,7 @@ const convertIface = (name, vbl) => {
   if (!data) return null
   converteds[idx] = {
     $type: "${name}",
-    objectID: data.objectID ? data.objectID() : null,
+    objectID: data.objectID ? data.objectID() + '' : null,
     ${attrs.join('\n    ')}
 
     // inherited

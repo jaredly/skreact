@@ -10,11 +10,11 @@ export default class App extends Component {
 
   constructor() {
     super()
-    this.state = processDump(window.DATA)
+    this.state = {data: processDump(window.DATA)}
   }
 
   recheck = () => {
-    this.setState(processDump(window.DATA))
+    this.setState({data: processDump(window.DATA)})
   }
 
   getChildContext() {
@@ -24,23 +24,25 @@ export default class App extends Component {
   }
 
   render() {
-    const {root, symbols} = processDump(window.DATA)
+    const {root} = processDump(window.DATA)
     return <div className={css(styles.container)}>
       <div className={css(styles.toolbar)}>
         <button
           className={css(styles.button)}
           onClick={this.recheck}
-        >Reprocess</button>
+        >
+          Reprocess
+        </button>
       </div>
       <div className={css(styles.main)}>
         <div className={css(styles.tree)}>
-          <Tree
+          {/*<Tree
             root={root}
             symbols={symbols}
-          />
+          />*/}
         </div>
         <div className={css(styles.display)}>
-          <Node name={root.uniqueName} />
+          <Node id={root} />
         </div>
       </div>
     </div>
