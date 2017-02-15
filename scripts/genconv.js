@@ -44,8 +44,9 @@ const clearedForInheritance = [
     borders: convertArray(data.borders()),
    */
 
-const extraCode = {
-  // 'MSShapeGroup': `result.svgString = generateSVGString(data)`
+const extraProps = {
+  'MSShapeGroup': `\n    svgString: generateSVGString(data) + '',`,
+  'MSSymbolMaster': `\n    svgString: generateSVGString(data) + '',`,
 }
 
 const disable = {
@@ -55,7 +56,42 @@ const disable = {
   MSContentDrawView: ['zoomTool'],
   MSNormalEventHandler: ['positionDrawing'],
   MSImmutableSymbolMaster: ['influenceRectEdgePaddingsThatDoNotCascade'],
-  BCOutlineViewDataController: ['currentlyHoveredView'],
+  BCOutlineViewController: [
+    'currentlyHoveredView'
+  ],
+}
+
+const whitelist = {
+  MSSymbolInstance: [
+    'symbolID',
+    'name',
+    'nameIsFixed',
+    'nodeName',
+    'frameGeneric',
+    'origin',
+    'rect',
+  ],
+  MSSymbolMaster: [
+    'svgString',
+    'frame',
+    'isActive',
+    'rotation',
+    'styleGeneric',
+    'absolutePosition',
+    'styledLayer',
+    'nodeName',
+    'debugDescription',
+    'description',
+    'isFlippedHorizontal',
+    'isFlippedVertical',
+    'isLayerExportable',
+    'isSelected',
+    'isVisible',
+    'layers',
+    'layout',
+    'name',
+    'nameIsFixed',
+  ]
 }
 
 const globalDisable = [
@@ -131,6 +167,7 @@ const convertIface = (name, vbl) => {
     const attrs = ifaces[name].properties
       .filter(p => (disable[name] || []).indexOf(p.name) === -1)
       .filter(p => globalDisable.indexOf(p.name) === -1)
+      .filter(p => !whitelist[name] || whitelist[name].indexOf(p.name) !== -1)
       .map(prop => (
         `${prop.name}: data.${prop.name} ? ${convertType(prop.type, 'data.' + prop.name + '()')} : null,`
       ))
@@ -148,6 +185,7 @@ const convertIface = (name, vbl) => {
     const inheritext = inherited
       .filter(p => (disable[name] || []).indexOf(p.name) === -1)
       .filter(p => globalDisable.indexOf(p.name) === -1)
+      .filter(p => !whitelist[name] || whitelist[name].indexOf(p.name) !== -1)
       .map(prop => (
         `${prop.name}: data.${prop.name} ? ${convertType(prop.type, 'data.' + prop.name + '()')} : null,`
       ))
@@ -163,16 +201,15 @@ const convertIface = (name, vbl) => {
   natives.push(data)
   log('converting ${name}')
   if (!data) return null
-  var result = {
+  converteds[idx] = {
     $type: "${name}",
+    objectID: data.objectID ? data.objectID() : null,
     ${attrs.join('\n    ')}
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    ${fullin}
+    ${fullin}${extraProps[name] || ''}
   }
-  ${extraCode[name] || ''}
-  converteds[idx] = result
   return {$ref: idx}
 }`
   }
