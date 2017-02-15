@@ -1,95 +1,21 @@
+// @flow
+
 import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
-import processDump from './process'
+
 import Node from './Node'
 import Editor from './Editor'
 import Tree from './Tree'
-import defaultCode from './template'
-import evalComponent from './evalComponent'
+import Header from './Header'
+import Hairline from './Hairline'
+import ComponentList from './ComponentList'
 
-import localforage from 'localforage'
+import evalComponent from './utils/evalComponent'
+import {colors} from './styles'
+import {initialImport, loadSavedState} from './utils/storage'
 
-import type {SkreactFile} from './types'
+import type {SkreactFile} from './utils/types'
 
-const COMPONENTS_KEY = 'skreact:components'
-
-const initialComponent = (name, rootName) => {
-  const Component = () => <Node name={rootName} />
-  Component.displayName = name
-  Component.rootName = rootName
-  return Component
-}
-
-const loadComponents = (rootName) => {
-  const texts = tryLoad(COMPONENTS_KEY)
-  const components = {
-    Application: {
-      text: defaultCode('Application', rootName),
-      Component: initialComponent('Application', rootName),
-    }
-  }
-  if (!texts) return components
-  for (let name in texts) {
-    components[name] = {
-      text: texts[name],
-      Component: evalComponent(name, texts[name], Node),
-    }
-  }
-  return components
-}
-
-const saveComponents = components => {
-  const texts = {}
-  for (let name in components) {
-    texts[name] = components[name].text
-  }
-  localStorage[COMPONENTS_KEY] = JSON.stringify(texts)
-}
-
-const inflateComponents = components => {
-  const res = {}
-  for (let name in components) {
-    res[name] = {
-      ...components[name],
-      Component: evalComponent(name, components[name].source, Node),
-    }
-  }
-  return res
-}
-
-const loadSavedState = () => {
-  return localforage.getItem(COMPONENTS_KEY)
-    .then(state => {
-      if (state) {
-        return {
-          ...state,
-          components: inflateComponents(state.components),
-        }
-      }
-    })
-}
-
-const initialImport = (): SkreactFile => {
-  // TODO get from not `window.DATA`
-  const data = processDump(window.DATA)
-  const rootName = data.byId[data.root].uniqueName
-  const state = {
-    topLevelSketchNodeIds: [data.root],
-    nodes: data.byId,
-    idsByName: data.idsByName,
-    symbolIds: data.symbols,
-    components: {
-      Application: {
-        source: defaultCode('Application', rootName),
-        Component: initialComponent('Application', rootName),
-        savedConfigurations: {},
-      },
-    },
-  }
-  // TODO should I inflate the Application here?
-
-  return state
-}
 
 export default class App extends Component {
   static childContextTypes = {
@@ -101,6 +27,7 @@ export default class App extends Component {
     loading: boolean,
     data: ?SkreactFile,
     currentComponent: string,
+    domNodes: any,
   }
 
   constructor() {
@@ -120,7 +47,7 @@ export default class App extends Component {
   }
 
   recheck = () => {
-    this.setState({data: processDump(window.DATA)})
+    // this.setState({data: processDump(window.DATA)})
   }
 
   getChildContext() {
@@ -130,36 +57,42 @@ export default class App extends Component {
     }
   }
 
-  commitComponent = text => {
+  commitComponent = (text: string) => {
     const name = this.state.currentComponent
     const Component = evalComponent(name, text, Node)
     if (!Component) {
       return
     }
+    if (!this.state.data) return
     const components = {
-      ...this.state.components,
+      ...this.state.data.components,
       [name]: { Component, text },
     }
     // saveComponents(components)
-    this.setState({components})
+    this.setState({data: {...this.state.data, components}})
   }
 
   doImport = () => {
     this.setState({data: initialImport()})
   }
 
+  renderEmpty() {
+    return <div>
+      To get started, import something
+      <button
+        onClick={this.doImport}
+      >
+        Import
+      </button>
+      Note: currently this only imports data that was pre-exported from sketch.
+      In future we'll grab it from the currently opened sketch file.
+    </div>
+  }
+
   render() {
     if (this.state.loading) return <div>Loading</div>
     if (!this.state.data) {
-      return <div>
-        To get started, import something
-        <button
-          onClick={this.doImport}
-        >
-          Import
-        </button>  
-        Note: currently this only imports data that was pre-exported from sketch. In future we'll grab it from the currently opened sketch file.
-      </div>
+      return this.renderEmpty()
     }
     const {nodes, idsByName} = this.state.data // processDump(window.DATA)
     const {currentComponent} = this.state
@@ -170,21 +103,39 @@ export default class App extends Component {
       <div className={css(styles.toolbar)}>
       </div>
       <div className={css(styles.main)}>
-        <div className={css(styles.editor)}>
-          <Editor
-            text={source}
-            onSave={this.commitComponent}
+        <div className={css(styles.leftSide)}>
+          <ComponentList
+            components={this.state.data.components}
+            selected={currentComponent}
+            onSelect={currentComponent => this.setState({currentComponent})}
           />
+          <Header
+          >
+            <div>Application Preview</div>
+          </Header>
+          <div className={css(styles.display)}>
+            <Component />
+          </div>
         </div>
+        <Hairline />
         <div className={css(styles.tree)}>
+          <Header
+          >
+            <div>Instance Tree</div>
+          </Header>
           <Tree
             root={root}
             nodes={nodes}
             domNodes={this.state.domNodes}
           />
         </div>
-        <div className={css(styles.display)}>
-          <Component />
+        <Hairline />
+        <div className={css(styles.editor)}>
+          <Editor
+            name={currentComponent}
+            text={source}
+            onSave={this.commitComponent}
+          />
         </div>
       </div>
     </div>
@@ -195,19 +146,27 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignSelf: 'stretch',
+    backgroundColor: colors.background,
+  },
+  leftSide: {
+    flex: 1,
+    backgroundColor: '#3b3e40',
+  },
+  display: {
+    margin: 20,
+    position: 'relative',
+    flex: 1,
+    overflow: 'auto',
   },
   button: {
     cursor: 'pointer',
   },
+
   main: {
     flexDirection: 'row',
     flex: 1,
   },
-  display: {
-    position: 'relative',
-    backgroundColor: '#f0f0f0',
-    flex: 1,
-  },
+
   tree: {
     overflow: 'auto',
     width: 200,

@@ -1,15 +1,12 @@
 import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
-import type {Node} from './types'
+import type {NodeT} from './types'
 
 const body = (node, symbols) => {
   switch (node.type) {
     case 'SymbolInstance':
-      if (!symbols[node.symbolId]) {
-        return <div>No symbol found</div>
-      }
-      return <NodeI id={symbols[node.symbolId]} />
+      return <Node id={node.symbolId} />
     case 'Text':
       return <span>{node.stringValue}</span>
     case 'ShapeGroup':
@@ -17,13 +14,14 @@ const body = (node, symbols) => {
   }
 }
 
-const renderTree = (id, nodes, domNodes, symbols, hide, props) => {
+const renderTree = (id, nodes, domNodes, symbols, hide, props, isRoot = false) => {
   const node = nodes[id]
   if (!node) return <span>Node not found</span>
   if (hide[node.uniqueName]) return null
   const myProps = props[node.uniqueName] || {}
   const style = {
     ...node.style,
+    ...isRoot ? {top: 0, left: 0} : null,
     ...myProps.style,
   }
   return <div
@@ -39,7 +37,7 @@ const renderTree = (id, nodes, domNodes, symbols, hide, props) => {
   </div>
 }
 
-export default class NodeI extends Component {
+export default class Node extends Component {
   static contextTypes = {
     data: React.PropTypes.any,
     domNodes: React.PropTypes.any,
@@ -49,7 +47,7 @@ export default class NodeI extends Component {
     const {hide={}, props={}} = this.props
     const {nodes, idsByName, symbolIds} = this.context.data
     const id = this.props.id ? this.props.id : idsByName[this.props.name]
-    return renderTree(id, nodes, this.context.domNodes, symbolIds, hide, props)
+    return renderTree(id, nodes, this.context.domNodes, symbolIds, hide, props, true)
   }
 }
 

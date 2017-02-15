@@ -90,7 +90,7 @@ const styleExtraFromLayer = (layer: any) => {
       }
     case 'MSArtboardGroup':
       return {
-        boxShadow: '0 1px 5px #888',
+        boxShadow: '0 1px 5px #000',
         overflow: 'hidden',
       }
     default:

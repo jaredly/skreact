@@ -12,7 +12,7 @@ export type NodeBase = {
   // and not have re-importing mess that up.
 }
 
-export type Node = ({
+export type NodeT = ({
   type: 'ComponentInstance',
   replacedObjectId: string, // this is the objectID of the thing that was replaced.
   // Umm maybe not props:  -  these need to be passed in from up top
@@ -49,7 +49,7 @@ export type Node = ({
 export type SkreactFile = {
   topLevelSketchNodeIds: ObjectId[], // objectIDs
   nodes: {
-    [id: ObjectId]: Node,
+    [id: ObjectId]: NodeT,
     // Soooo maybe this also have component instances too? maybe shouldn't hurt.
   },
   symbolIds: {
@@ -61,7 +61,7 @@ export type SkreactFile = {
   components: {
     [name: string]: {
       source: string,
-      Component: React$Component<*, *, *>,
+      Component: any & {rootName: string},
       savedConfigurations: {
         [name: string]: {
           props: any,

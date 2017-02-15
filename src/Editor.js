@@ -2,6 +2,8 @@ import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 import CodeMirror from 'react-codemirror'
 
+import Header from './Header'
+
 import 'codemirror/theme/solarized.css'
 import 'codemirror/lib/codemirror.css'
 import 'codemirror/mode/javascript/javascript'
@@ -25,12 +27,16 @@ export default class Editor extends Component {
     return <div
       className={css(styles.container)}  
     >
-      <button
-        onClick={this.save}
-        className={css(styles.button)}
-      >
-        Update component
-      </button>
+      <Header >
+        <div>{this.props.name}.jsx</div>
+        <div style={{flex: 1}} />
+        <button
+          onClick={this.save}
+          className={css(styles.button)}
+        >
+          Update component
+        </button>
+      </Header>
       <CodeMirror
         value={this.state.value}
         className={css(styles.editor)}
@@ -57,7 +63,8 @@ const styles = StyleSheet.create({
     height: 600,
   },
   button: {
-    padding: '10px 20px',
+    // padding: '10px 20px',
+    alignSelf: 'stretch',
     backgroundColor: 'white',
     cursor: 'pointer',
     border: 'none',
