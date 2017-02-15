@@ -383,10 +383,10 @@ function getSelectedArtboards(document) {
   return Object.keys(artboards).map(function(id) {return artboards[id]})
 }
 
-function getSymbolsPage() {
+function getSymbolsPage(document) {
   var pages = document.sketchObject.pages()
   for (var i=0; i<pages.length; i++) {
-    if (pages[i].name() === 'Symbols') {
+    if (pages[i].name() == 'Symbols') {
       return pages[i]
     }
   }
@@ -399,10 +399,12 @@ function processSymbols(symbolsPage, i) {
   }
   var foundNew = false
   var symbols = referencedSymbols
+  log('referenced ' + JSON.stringify(symbols))
   referencedSymbols = {}
   symbolsPage.layers().forEach(function (layer) {
-    if (layer.symbolID && referencedSymbols[layer.symbolID()]) {
+    if (layer.symbolID && symbols[layer.symbolID()]) {
       if (natives.indexOf(layer) === -1) {
+        log('got a symbol here')
         foundNew = true
         convertGeneric(layer)
       }
@@ -424,11 +426,13 @@ function runExport() {
   var symbolsPage = getSymbolsPage(document)
   if (!symbolsPage) {
     log('failed to find symbols page')
+    return
   }
 
   var root = convertGeneric(artboards[0])
+  processSymbols(symbolsPage, 1)
 
-  var dump = JSON.stringify({root: convertGeneric(d), converteds: converteds}, null, 2)
+  var dump = JSON.stringify({root: root, converteds: converteds}, null, 2)
   writeFile(dest, 'window.DATA = ' + dump)
   log('dumped!')
 }

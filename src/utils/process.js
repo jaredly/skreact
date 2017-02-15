@@ -173,9 +173,9 @@ function processDump({root, converteds}: any) {
     symbols[id] = processLayer(symbols[id], byId, idsByName)
   }
   console.log('ha')
-  const doc = converteds[0]
-  const page = doc.documentData.pages[0]
-  const artboard = page.artboards[0] // TODO only export one artboard
+  // const doc = converteds[0]
+  // const page = doc.documentData.pages[0]
+  const artboard = converteds[0]
   const nodes = {}
   const id = processLayer(artboard, byId, idsByName)
   const res =  { root: id, symbols, byId, idsByName }
