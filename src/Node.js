@@ -19,6 +19,7 @@ const body = (node, symbols) => {
 export default class Node extends Component {
   static contextTypes = {
     data: React.PropTypes.any,
+    domNodes: React.PropTypes.any,
   }
 
   render() {
@@ -27,14 +28,15 @@ export default class Node extends Component {
     if (!node) return <span>Node not found</span>
     // inSymbol
     return <div
+      ref={domNode => this.context.domNodes[node.id] = domNode}
       style={{
         position: 'absolute',
         ...node.style,
         // ...inSymbol ? { display: 'flex' } : null,
       }}
     >
-      {node.children && node.children.map(id => (
-        <Node key={id} id={id} />
+      {node.children && node.children.map(child => (
+        <Node key={child.id} id={child.id} />
       ))}
       {body(node, data.symbols)}
     </div>

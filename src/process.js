@@ -118,7 +118,7 @@ const processLayer = (layer, byId, byName) => {
   node.layer = layer
   node.uniqueName = uniqueName
   node.id = layer.objectID
-  node.children = layer.layers ? layer.layers.map(layer => processLayer(layer, byId, byName)) : []
+  node.children = layer.layers ? layer.layers.map(layer => ({type: 'node', id: processLayer(layer, byId, byName)})) : []
   byName[uniqueName] = node
   byId[node.id] = node
   return node.id
