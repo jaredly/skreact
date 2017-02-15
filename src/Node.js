@@ -1,23 +1,24 @@
 import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
+import type {Node} from './types'
+
 const body = (node, symbols) => {
   switch (node.type) {
-    case 'MSSymbolInstance':
+    case 'SymbolInstance':
       if (!symbols[node.symbolId]) {
         return <div>No symbol found</div>
       }
-      return <Node id={symbols[node.symbolId]} />
-    case 'MSTextLayer':
+      return <NodeI id={symbols[node.symbolId]} />
+    case 'Text':
       return <span>{node.stringValue}</span>
-    case 'SVG':
-      // case 'MSSymbolMaster':
+    case 'ShapeGroup':
       return <div dangerouslySetInnerHTML={{ __html: node.svgSource }} />
   }
 }
 
-const renderTree = (id, byId, domNodes, symbols, hide, props) => {
-  const node = byId[id]
+const renderTree = (id, nodes, domNodes, symbols, hide, props) => {
+  const node = nodes[id]
   if (!node) return <span>Node not found</span>
   if (hide[node.uniqueName]) return null
   const myProps = props[node.uniqueName] || {}
@@ -32,13 +33,13 @@ const renderTree = (id, byId, domNodes, symbols, hide, props) => {
     ref={domNode => domNodes[node.id] = domNode}
   >
     {node.children && node.children.map(child => (
-      renderTree(child.id, byId, domNodes, symbols, hide, props)
+      renderTree(child, nodes, domNodes, symbols, hide, props)
     ))}
     {body(node, symbols)}
   </div>
 }
 
-export default class Node extends Component {
+export default class NodeI extends Component {
   static contextTypes = {
     data: React.PropTypes.any,
     domNodes: React.PropTypes.any,
@@ -46,9 +47,9 @@ export default class Node extends Component {
 
   render() {
     const {hide={}, props={}} = this.props
-    const {byId, byName, symbols} = this.context.data
-    const id = this.props.id ? this.props.id : byName[this.props.name].id
-    return renderTree(id, byId, this.context.domNodes, symbols, hide, props)
+    const {nodes, idsByName, symbolIds} = this.context.data
+    const id = this.props.id ? this.props.id : idsByName[this.props.name]
+    return renderTree(id, nodes, this.context.domNodes, symbolIds, hide, props)
   }
 }
 

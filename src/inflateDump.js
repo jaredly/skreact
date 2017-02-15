@@ -22,10 +22,22 @@ function inflateOne(node, converteds, symbols) {
   }
 }
 
+window.getInflatedLayer = objectID => {
+  if (!window.INFLATED) {
+    const symbols = {}
+    inflate(window.DATA.converteds, symbols)
+  }
+  return window.INFLATED[objectID]
+}
+
 export default function inflate(converteds, symbols) {
+  window.INFLATED = {}
   for (let i = 0; i < converteds.length; i++) {
     const node = converteds[i]
     if (!node) continue;
     inflateOne(node, converteds, symbols)
+    if (node.objectID) {
+      window.INFLATED[node.objectID] = node
+    }
   }
 }

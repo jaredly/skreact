@@ -1,0 +1,6 @@
+{
+  "parser": "./node_modules/babel-eslint",
+  "globals": {
+    "DEBUG": false
+  }
+}

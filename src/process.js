@@ -1,5 +1,8 @@
+// @flow
 
 import inflate from './inflateDump'
+
+import type {Node, /*NodeExtra, */NodeBase, ObjectId} from './types'
 
 const color2string = color => color && `rgba(${color.r * 255}, ${color.g * 255}, ${color.b * 255}, ${color.a})`
 
@@ -20,150 +23,162 @@ const ccolor = color => color && {
 const cshadow = shadow => shadow &&
   `${shadow.offsetX}px ${shadow.offsetY}px ${shadow.blurRadius}px ${color2string(ccolor(shadow.colorGeneric))}`
 
-// dunno if this needs to change, but here we are
-const nodeFromLayer = thing => {
-  let extra = {}
-  let extraStyle = {
-      // outline: '1px solid magenta',
-  }
-  const style = {
-    position: 'absolute',
-    display: thing.isVisible !== false ? 'flex' : 'none',
-    ...cframe(thing.frameGeneric),
-    backgroundColor: color2string(ccolor(thing.backgroundColorGeneric)),
-    borderRadius: thing.cornerRadiusFloat,
-    boxShadow: thing.styleGeneric && thing.styleGeneric.shadow ? cshadow(thing.styleGeneric.shadow) : null,
-    opacity: thing.styleGeneric && thing.styleGeneric.contextSettingsGeneric ? thing.styleGeneric.contextSettingsGeneric.opacity : undefined,
-  }
+const isRectangleGroup = thing => thing.layers.length === 1 && thing.layers[0].$type === 'MSRectangleShape'
 
-  if (thing.$type === 'MSShapeGroup') {
-    if(thing.layers.length == 1 && thing.layers[0].$type === 'MSRectangleShape') {
-      // this is a lone rectangle, which probably wants to be a container?
-      const child = thing.layers[0]
-      return {
-        type: 'Rectangle',
-        name: thing.name,
-        childName: child.name,
-        style: {
-          ...style,
-          borderRadius: child.cornerRadiusFloat,
-          backgroundColor: thing.styleGeneric.fill
-            ? color2string(ccolor(thing.styleGeneric.fill.colorGeneric))
-            : color2string(ccolor(child.backgroundColorGeneric)),
-        },
-      }
-    } else {
-      const match = thing.svgString.match(/width="(\d+)px" height="(\d+)px"/) 
-      if (!match) {
-        console.log(thing.svgString)
-        throw new Error('failed to find svg dims')
-      }
-      let [_, width, height] = match
-      width = +width
-      height = +height
-      if (width > style.width) {
-        style.left -= (width - style.width) / 2
-        style.width = width
-      }
-      if (height > style.height) {
-        style.top -= (height - style.height) / 2
-        style.height = height
-      }
-      return {
-        type: 'SVG',
-        name: thing.name,
-        style: {
-          ...style,
-        },
-        backgroundColor: thing.styleGeneric.fill ? color2string(ccolor(thing.styleGeneric.fill.colorGeneric)) : null,
-        svgSource: thing.svgString,
-      }
-    }
-  }
-
-  switch (thing.$type) {
-    case 'MSSymbolInstance':
-      extra = {
-        symbolId: thing.symbolID,
-      }
-      break
+const nodeExtraFromLayer = (layer: any) => {
+  switch (layer.$type) {
     case 'MSSymbolMaster':
-      extra = {
-        svgSource: thing.svgString,
-        // layers: null,
+      return {type: 'SymbolMaster', svgSource: layer.svgString, children: [], symbolId: layer.symbolID}
+    case 'MSSymbolInstance':
+      return {type: 'SymbolInstance', symbolId: layer.symbolID}
+    case 'MSShapeGroup':
+      if (isRectangleGroup(layer)) {
+        return {type: 'Rectangle'}
+      } else {
+        return {type: 'ShapeGroup', svgSource: layer.svgString}
       }
-      break
+    case 'MSTextLayer':
+      return {type: 'Text', stringValue: layer.stringValue}
+    default:
+      return {type: 'Group', children: []}
+  }
+}
+
+const fixedSVGFrame = (frame, svgString) => {
+  const match = svgString.match(/width="(\d+)px" height="(\d+)px"/)
+  if (!match) {
+    console.log(svgString)
+    throw new Error('failed to find svg dims')
+  }
+  let {left, top} = frame
+  let [_, width, height] = match
+  width = +width
+  height = +height
+  if (width > frame.width) {
+    left -= (width - frame.width) / 2
+  } else {
+    width = frame.width
+  }
+  if (height > frame.height) {
+    top -= (height - frame.height) / 2
+  } else {
+    height = frame.height
+  }
+  return {top, left, width, height}
+}
+
+const styleExtraFromLayer = (layer: any) => {
+  switch (layer.$type) {
+    case 'MSShapeGroup':
+      if (isRectangleGroup(layer)) {
+        const child = layer.layers[0]
+        return {
+          borderRadius: child.cornerRadiusFloat,
+          backgroundColor: layer.styleGeneric.fill
+            ? color2string(ccolor(layer.styleGeneric.fill.colorGeneric))
+            : color2string(ccolor(child.backgroundColorGeneric)),
+        }
+      } else {
+        const frame = cframe(layer.frameGeneric)
+        return fixedSVGFrame(frame, layer.svgString)
+      }
+    case 'MSTextLayer':
+      return {
+        fontSize: layer.font.pointSize,
+        fontFamily: layer.font.fontName,
+        color: color2string(ccolor(layer.textColor)),
+      }
     case 'MSArtboardGroup':
-      extraStyle = {
+      return {
         boxShadow: '0 1px 5px #888',
         overflow: 'hidden',
       }
-      break
-    case 'MSTextLayer':
-      extra = {
-        stringValue: thing.stringValue,
-        font: thing.font,
-      }
-      extraStyle = {
-        fontSize: thing.font.pointSize,
-        fontFamily: thing.font.fontName,
-        color: color2string(ccolor(thing.textColor)),
-      }
-      break
     default:
-      break
-  }
-
-  return {
-    type: thing.$type,
-    name: thing.name,
-    style: {
-      ...style,
-      ...extraStyle,
-    },
-    frame: cframe(thing.frameGeneric),
-    background: ccolor(thing.backgroundColorGeneric),
-    ...extra,
+      return {}
   }
 }
 
-const processLayer = (layer, byId, byName) => {
-  if (byId[layer.objectID]) return layer.objectID // already processed
-  const uniqueName = findUniqueName(layer.name, byName)
-  const node = nodeFromLayer(layer)
-  node.layer = layer
-  node.uniqueName = uniqueName
-  node.id = layer.objectID
-  node.children = layer.layers ? layer.layers.map(layer => ({type: 'node', id: processLayer(layer, byId, byName)})) : []
-  byName[uniqueName] = node
+const styleFromLayer = (layer: any) => {
+  return {
+    position: 'absolute',
+    display: layer.isVisible !== false ? 'flex' : 'none',
+    ...cframe(layer.frameGeneric),
+    backgroundColor: color2string(ccolor(layer.backgroundColorGeneric)),
+    borderRadius: layer.cornerRadiusFloat,
+    boxShadow: layer.styleGeneric && layer.styleGeneric.shadow ? cshadow(layer.styleGeneric.shadow) : null,
+    opacity: layer.styleGeneric && layer.styleGeneric.contextSettingsGeneric
+      ? layer.styleGeneric.contextSettingsGeneric.opacity
+      : undefined,
+  }
+}
+
+const nodeBaseFromLayer = (layer: any, idsByName: any): NodeBase => ({
+    id: layer.objectID,
+    name: layer.name,
+    uniqueName: findUniqueName(layer.name, idsByName), // TODO fill in
+    style: {
+      ...styleFromLayer(layer),
+      ...styleExtraFromLayer(layer),
+    }
+})
+
+const nodeFromLayer = (layer: any, idsByName: any): Node => {
+  const node = typeof layer === 'string' ? {
+    type: 'ImportError',
+    id: layer,
+    uniqueName: findUniqueName('errorImporting', idsByName),
+    name: 'errorImporting',
+    style: {},
+  } : {
+    ...nodeBaseFromLayer(layer, idsByName),
+    ...nodeExtraFromLayer(layer),
+  }
+  // $FlowFixMe I want to use an intersection of unions but bugs https://github.com/facebook/flow/issues/3391
+  return node
+}
+
+const processLayer = (layer, byId, idsByName): ObjectId => {
+  const node: Node = nodeFromLayer(layer, idsByName)
+  if (node.type === 'SymbolMaster') {
+    node.id = node.symbolId
+  }
+  idsByName[node.uniqueName] = node.id
   byId[node.id] = node
+  switch (node.type) {
+    case 'SymbolMaster':
+    case 'Group':
+      if (!layer.layers) {
+        debugger
+      }
+      node.children = layer.layers.map(child => processLayer(child, byId, idsByName))
+  }
   return node.id
 }
 
-function findUniqueName(name, byName) {
-  if (!byName[name]) return name
+function findUniqueName(name, idsByName) {
+  if (!idsByName[name]) return name
   for (let i=0; i<100000; i++) {
     const tmp = name + i
-    if (!byName[tmp]) return tmp
+    if (!idsByName[tmp]) return tmp
   }
   throw new Error("no unique name for " + name)
 }
 
-function processDump({root, converteds}) {
+function processDump({root, converteds}: any) {
   const symbols = {}
-  const byId = {}
-  const byName = {}
   inflate(converteds, symbols)
+  const byId = {}
+  const idsByName = {}
   for (let id in symbols) {
-    symbols[id] = processLayer(symbols[id], byId, byName)
+    symbols[id] = processLayer(symbols[id], byId, idsByName)
   }
   console.log('ha')
   const doc = converteds[0]
   const page = doc.documentData.pages[0]
-  const artboard = page.artboards[0] // TODO process all
+  const artboard = page.artboards[0] // TODO only export one artboard
   const nodes = {}
-  const id = processLayer(artboard, byId, byName)
-  const res =  { root: id, symbols, byId, byName }
+  const id = processLayer(artboard, byId, idsByName)
+  const res =  { root: id, symbols, byId, idsByName }
   window.RES = res
   return res
 }

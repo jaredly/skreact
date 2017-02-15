@@ -127,16 +127,16 @@ class TreeNode extends Component  {
         >
           {nodes[root].uniqueName}
         </div>
-        {this.state.open && <div style={{
+        {this.state.open && nodes[root].children && <div style={{
           paddingLeft: 5,
           borderLeft: '1px dotted #ccc',
           marginLeft: 10,
         }}>
-          {nodes[root].children.map(child => (
+          {nodes[root].children.map(id => (
             <TreeNode
-              root={child.id}
+              root={id}
               nodes={nodes}
-              key={child.id}
+              key={id}
               hover={this.props.hover}
               onContextMenu={this.props.onContextMenu}
             />
