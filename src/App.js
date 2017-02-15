@@ -5,6 +5,43 @@ import Node from './Node'
 import Editor from './Editor'
 import Tree from './Tree'
 import defaultCode from './template'
+import evalComponent from './evalComponent'
+
+const tryLoad = key => {
+  try {
+    return JSON.parse(localStorage[key])
+  } catch (e) {
+    return null
+  }
+}
+
+const COMPONENTS_KEY = 'skreact:components'
+
+const loadComponents = (rootName) => {
+  const texts = tryLoad(COMPONENTS_KEY)
+  const components = {
+    App: {
+      text: defaultCode('App', rootName),
+      Component: () => <Node name={rootName} />,
+    }
+  }
+  if (!texts) return components
+  for (let name in texts) {
+    components[name] = {
+      text: texts[name],
+      Component: evalComponent(name, texts[name], Node),
+    }
+  }
+  return components
+}
+
+const saveComponents = components => {
+  const texts = {}
+  for (let name in components) {
+    texts[name] = components[name].text
+  }
+  localStorage[COMPONENTS_KEY] = JSON.stringify(texts)
+}
 
 const ext = (a, b) => {
   const prev = {}
@@ -28,12 +65,7 @@ export default class App extends Component {
     this.state = {
       data,
       domNodes: {},
-      components: {
-        [rootName]: {
-          text: defaultCode(rootName),
-          Component: () => <Node name={rootName} />,
-        }
-      }
+      components: loadComponents(rootName),
     }
 
     this._hover = document.createElement('div')
@@ -62,6 +94,7 @@ export default class App extends Component {
 
   hover = id => {
     if (!id) {
+      if (!this._hovering) return
       this._hover.style.display = 'none'
       this._placeholder.parentNode.replaceChild(this._hovering, this._placeholder)
       ext(this._hovering.style, this._prevstyle)
@@ -93,8 +126,23 @@ export default class App extends Component {
     }
   }
 
+  commitComponent = text => {
+    const name = 'App'
+    const Component = evalComponent(name, text, Node)
+    if (!Component) {
+      return
+    }
+    const components = {
+      ...this.state.components,
+      [name]: { Component, text },
+    }
+    saveComponents(components)
+    this.setState({components})
+  }
+
   render() {
     const {root, byId} = this.state.data // processDump(window.DATA)
+    const {Component, text} = this.state.components.App
     return <div className={css(styles.container)}>
       <div className={css(styles.toolbar)}>
         <button
@@ -107,7 +155,8 @@ export default class App extends Component {
       <div className={css(styles.main)}>
         <div className={css(styles.editor)}>
           <Editor
-            text={"hello"}
+            text={text}
+            onSave={this.commitComponent}
           />
         </div>
         <div className={css(styles.tree)}>
@@ -120,7 +169,7 @@ export default class App extends Component {
           />
         </div>
         <div className={css(styles.display)}>
-          <Node id={root} />
+          <Component />
         </div>
       </div>
     </div>

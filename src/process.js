@@ -92,11 +92,6 @@ const nodeFromLayer = thing => {
         svgSource: thing.svgString,
         // layers: null,
       }
-      const match = thing.svgString.match(/width="(\d+)px" height="(\d+)px"/) 
-      if (match) {
-        extra.svgWidth = +match[1]
-        extra.svgHeight = +match[2]
-      }
       break
     case 'MSArtboardGroup':
       extraStyle = {

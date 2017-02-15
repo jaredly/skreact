@@ -36,7 +36,10 @@ export default class Editor extends Component {
         onChange={value => this.setState({value})}
         options={{
           mode: 'javascript',
-          theme: 'solarized',
+          theme: 'solarized dark',
+          lineNumbers: true,
+          styleActiveLine: true,
+          matchBrackets: true,
         }}
       />
     </div>
@@ -45,7 +48,7 @@ export default class Editor extends Component {
 
 const styles = StyleSheet.create({
   container: {
-    width: 300,
+    width: 500,
     flex: 1,
   },
   editor: {

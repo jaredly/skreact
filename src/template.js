@@ -1,5 +1,5 @@
 
-export default (name) => `
+export default (name, layerName) => `
 class ${name} extends Component {
   constructor(props) {
     super()
@@ -14,14 +14,11 @@ class ${name} extends Component {
     // Next level: where the tree is dynamic. How do I do that?
     // Maybe there's a way to "add a hole" to the render tree, which then you can fill through these props.
     return <Node
-      name="${name}"
+      name="${layerName}"
       hide={{
         // [name]: bool (true for hide)
         // For example, to hide "smiley" when "this.state.happy" is false, do
         // smiley: !this.state.happy,
-      }}
-      holes={{
-        // the name of the hole, and the thing you're putting in it.
       }}
       props={{
         // These props will be spread into the container node for the given layer
@@ -34,3 +31,9 @@ class ${name} extends Component {
   }
 }
 `
+
+/*
+      holes={{
+        // the name of the hole, and the thing you're putting in it.
+      }}
+*/

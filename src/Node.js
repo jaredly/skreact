@@ -16,20 +16,23 @@ const body = (node, symbols) => {
   }
 }
 
-const renderTree = (id, byId, domNodes, symbols) => {
+const renderTree = (id, byId, domNodes, symbols, hide, props) => {
   const node = byId[id]
   if (!node) return <span>Node not found</span>
+  if (hide[node.uniqueName]) return null
+  const myProps = props[node.uniqueName] || {}
+  const style = {
+    ...node.style,
+    ...myProps.style,
+  }
   return <div
-    ref={domNode => domNodes[node.id] = domNode}
     key={id}
-    style={{
-      position: 'absolute',
-      ...node.style,
-      // ...inSymbol ? { display: 'flex' } : null,
-    }}
+    {...myProps}
+    style={style}
+    ref={domNode => domNodes[node.id] = domNode}
   >
     {node.children && node.children.map(child => (
-      renderTree(child.id, byId, domNodes, symbols)
+      renderTree(child.id, byId, domNodes, symbols, hide, props)
     ))}
     {body(node, symbols)}
   </div>
@@ -42,9 +45,10 @@ export default class Node extends Component {
   }
 
   render() {
+    const {hide={}, props={}} = this.props
     const {byId, byName, symbols} = this.context.data
-    const node = this.props.id ? byId[this.props.id] : byName[this.props.name]
-    return renderTree(node.id, byId, this.context.domNodes, symbols)
+    const id = this.props.id ? this.props.id : byName[this.props.name].id
+    return renderTree(id, byId, this.context.domNodes, symbols, hide, props)
   }
 }
 
