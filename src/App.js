@@ -9,6 +9,7 @@ import Tree from './Tree'
 import Header from './Header'
 import Hairline from './Hairline'
 import ComponentList from './ComponentList'
+import ConfigurationPreview from './ConfigurationPreview'
 
 import evalComponent from './utils/evalComponent'
 import {colors} from './styles'
@@ -16,17 +17,16 @@ import {initialImport, loadSavedState} from './utils/storage'
 
 import type {SkreactFile} from './utils/types'
 
-
 export default class App extends Component {
   static childContextTypes = {
-    data: React.PropTypes.any,
-    domNodes: React.PropTypes.any,
+    data: React.PropTypes.any,    
   }
 
   state: {
     loading: boolean,
     data: ?SkreactFile,
     currentComponent: string,
+    componentInstances: any,
     domNodes: any,
   }
 
@@ -36,7 +36,9 @@ export default class App extends Component {
       loading: true,
       data: null,
       currentComponent: 'root',
+      // TODO clear these out whenever changing current component
       domNodes: {},
+      componentInstances: {},
     }
   }
 
@@ -53,8 +55,15 @@ export default class App extends Component {
   getChildContext() {
     return {
       data: this.state.data, // processDump(window.DATA),
-      domNodes: this.state.domNodes,
     }
+  }
+
+  switchCurrentComponent = (currentComponent: string) => {
+    this.setState({
+      currentComponent,
+      domNodes: {},
+      componentInstances: {},
+    })
   }
 
   commitComponent = (text: string) => {
@@ -91,6 +100,33 @@ export default class App extends Component {
     </div>
   }
 
+  renderConfigurations() {
+    const {Component, visibleConfigurations, savedConfigurations} = this.state.data.components[this.state.currentComponent]
+    return <div className={css(styles.display)}>
+      {visibleConfigurations.map(id => {
+        if (!this.state.domNodes[id]) this.state.domNodes[id] = {}
+        if (!this.state.componentInstances[id]) this.state.componentInstances[id] = {}
+        if (id === 'default') {
+          return <ConfigurationPreview
+            key={id}
+            Component={Component}
+            config={undefined}
+            domNodes={this.state.domNodes[id]}
+            componentInstances={this.state.componentInstances[id]}
+          />
+        } else {
+          return <ConfigurationPreview
+            key={id}
+            Component={Component}
+            config={savedConfigurations[id]}
+            domNodes={this.state.domNodes[id]}
+            componentInstances={this.state.componentInstances[id]}
+          />
+        }
+      })}
+    </div>
+  }
+
   render() {
     if (this.state.loading) return <div>Loading</div>
     if (!this.state.data) {
@@ -108,16 +144,18 @@ export default class App extends Component {
           <ComponentList
             components={components}
             selected={currentComponent}
-            onSelect={currentComponent => this.setState({currentComponent})}
+            onSelect={this.switchCurrentComponent}
           />
           <Header
           >
             <div>Instance Tree</div>
           </Header>
           <Tree
-            root={root}
+            currentComponent={currentComponent}
             nodes={nodes}
             domNodes={this.state.domNodes}
+            components={components}
+            idsByName={idsByName}
           />
         </div>
         <div className={css(styles.preview)}>
@@ -125,13 +163,7 @@ export default class App extends Component {
           >
             <div>Application Preview</div>
           </Header>
-          <div className={css(styles.display)}>
-            <Component style={{
-              boxShadow: '0 1px 5px #000',
-              // backgroundColor: 'white',
-              position: 'relative', top: 0, left: 0,
-            }} />
-          </div>
+          {this.renderConfigurations()}
         </div>
         <div className={css(styles.editor)}>
           <Editor

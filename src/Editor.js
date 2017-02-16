@@ -19,6 +19,14 @@ export default class Editor extends Component {
   componentDidMount() {
   }
 
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.name !== this.props.name) {
+      this.setState({value: nextProps.text})
+      // this.editor.getCodeMirror().setValue(nextProps.text)
+    }
+
+  }
+
   save = () => {
     this.props.onSave(this.state.value)
   }
@@ -38,6 +46,7 @@ export default class Editor extends Component {
         </button>
       </Header>
       <CodeMirror
+        ref={editor => this.editor = editor}
         value={this.state.value}
         className={css(styles.editor)}
         onChange={value => this.setState({value})}

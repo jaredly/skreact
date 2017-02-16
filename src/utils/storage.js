@@ -51,7 +51,8 @@ export const loadSavedState = () => {
 }
 
 const pascalify = name => name
-  .replace(/[-\s]\w/g, x => x.slice(1).toUpperCase())
+  .replace(/[^A-Za-z0-9_][A-Za-z0-9]/g, x => x.slice(1).toUpperCase())
+  .replace(/[^A-Za-z0-9_]/g, '')
   .replace(/^\w/, x => x.toUpperCase())
 
 const reifyComponents = components => {
@@ -64,6 +65,7 @@ const reifyComponents = components => {
       source: defaultCode(name, component.rootName),
       Component: initialComponent(name, component.rootName),
       savedConfigurations: {},
+      visibleConfigurations: ['default'],
     }
   }
   return result
@@ -84,6 +86,7 @@ export const initialImport = (): SkreactFile => {
         source: defaultCode('Application', rootName),
         Component: initialComponent('Application', rootName),
         savedConfigurations: {},
+        visibleConfigurations: ['default'],
       },
       ...reifyComponents(components),
     },

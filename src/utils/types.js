@@ -76,6 +76,7 @@ export type SkreactFile = {
           state: any,
         },
       },
+      visibleConfigurations: string[],
     },
   },
 }

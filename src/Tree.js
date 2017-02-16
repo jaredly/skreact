@@ -1,6 +1,7 @@
 import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
+import {colors} from './styles'
 import ContextMenu from './ContextMenu'
 import Icon from './Icon'
 
@@ -19,6 +20,7 @@ export default class Tree extends Component {
     super()
     this.state = {
       menu: null,
+      selected: 'root',
     }
     this.setupHover()
   }
@@ -89,14 +91,34 @@ export default class Tree extends Component {
     })
   }
 
+  setSelected = (id: string) => {
+    this.setState({selected: id})
+  }
+
   render() {
-    const {root, nodes} = this.props
-    return <div>
+    const {currentComponent, nodes, components, idsByName} = this.props
+    const {selected} = this.state
+    const idsByComponentId = {}
+    Object.keys(components).forEach(id => {
+      idsByComponentId[id] = idsByName[components[id].Component.rootName]
+    })
+    const root = idsByComponentId[currentComponent]
+    return <div className={css(styles.container)}>
+      <div
+        onClick={() => this.setState({selected: 'root'})}
+        className={css(styles.root, selected === 'root' && styles.rootSelected)}
+      >
+        {components[currentComponent].name}
+      </div>
       <TreeNode
         root={root}
         nodes={nodes}
         hover={this.hover}
         onContextMenu={this.showContextMenu}
+        idsByComponentId={idsByComponentId}        
+        components={components}
+        selected={selected}
+        setSelected={this.setSelected}
         isRoot
       />
       {this.state.menu &&
@@ -127,10 +149,12 @@ class TreeNode extends Component  {
   }
 
   render() {
-    const {root, nodes, hover} = this.props
+    const {root, nodes, hover, idsByComponentId, components, selected, setSelected} = this.props
     const node = nodes[root]
-    const children = node.type === 'SymbolInstance' ?
-      nodes[node.symbolId].children : node.children
+    const children = node.type === 'ComponentInstance' ?
+      [idsByComponentId[node.componentId]] : node.children
+    const niceName = node.type === 'ComponentInstance' ?
+      components[node.componentId].name : ''
     return (
       <div style={{
 
@@ -138,15 +162,24 @@ class TreeNode extends Component  {
         <div
           onMouseOver={() => hover(root)}
           onMouseOut={() => hover(null)}
-          className={css(styles.treeName)}
-          onClick={() => this.setState({open: !this.state.open})}
+          className={css(styles.treeName, root === selected && styles.treeNameSelected)}
+          onClick={() => this.props.setSelected(root)}
           onContextMenu={evt => this.props.onContextMenu(root, evt)}
         >
           {(children && children.length ? <Icon className={css(styles.icon)}
             name={this.state.open ? 'ios-arrow-down' : 'ios-arrow-right'}
+            onClick={(e) => (e.stopPropagation(), this.setState({ open: !this.state.open }))}
           /> : null)}
           {iconForNode(node)}
-          {nodes[root].uniqueName}
+          <div className={css(styles.nameArea)}>
+            {niceName &&
+              <div className={css(styles.niceName)}>
+                {niceName}
+              </div>}
+            <div className={css(styles.uniqueName)}>
+              {nodes[root].uniqueName}
+            </div>
+          </div>
         </div>
         {this.state.open && children && <div style={{
           paddingLeft: 5,
@@ -160,6 +193,10 @@ class TreeNode extends Component  {
               key={id}
               hover={this.props.hover}
               onContextMenu={this.props.onContextMenu}
+              idsByComponentId={idsByComponentId}
+              components={components}
+              selected={selected}
+              setSelected={setSelected}
             />
           ))}
         </div>}
@@ -169,13 +206,61 @@ class TreeNode extends Component  {
 } 
 
 const styles = StyleSheet.create({
+
+  container: {
+    overflow: 'auto',
+    flex: 1,
+  },
+
+  root: {
+    cursor: 'pointer',
+    flexDirection: 'row',
+    padding: '5px 10px',
+    ':hover': {
+      backgroundColor: '#eee',
+    },
+  },
+
+  rootSelected: {
+    color: 'white',
+    backgroundColor: colors.highlight,
+    ':hover': {
+      backgroundColor: colors.highlight,
+    },
+  },
+
   treeName: {
     flexDirection: 'row',
     padding: '5px 10px',
     cursor: 'pointer',
     ':hover': {
       backgroundColor: '#eee',
-    }
+    },
+    fontSize: '90%',
+  },
+
+  treeNameSelected: {
+    color: 'white',
+    backgroundColor: colors.highlight,
+    ':hover': {
+      backgroundColor: colors.highlight,
+    },
+  },
+
+  nameArea: {
+    flexDirection: 'row',
+    overflow: 'auto',
+    flex: 1,
+    // flexWrap: 'wrap',
+  },
+
+  niceName: {
+    paddingRight: 5,
+    fontWeight: 400,
+  },
+
+  uniqueName: {
+    // color: '#555',
   },
 
   icon: {

@@ -8,7 +8,10 @@ import type {NodeT} from './utils/types'
 const body = (node, symbols, style) => {
   switch (node.type) {
     case 'ComponentInstance':
-      return <Node componentId={node.componentId} />
+      return <Node
+        componentId={node.componentId}
+        id={node.id}
+      />
     case 'Text':
       return <span>{node.stringValue}</span>
     case 'ShapeGroup':
@@ -70,6 +73,7 @@ export default class Node extends Component {
   static contextTypes = {
     data: React.PropTypes.any,
     domNodes: React.PropTypes.any,
+    componentInstances: React.PropTypes.any,
   }
 
   getNode() {
@@ -80,7 +84,13 @@ export default class Node extends Component {
     const {hide={}, props={}, componentId, componentName, id, name, style={}} = this.props
     if (componentId) {
       const {Component} = this.context.data.components[componentId]
-      return <Component />
+      return <Component ref={inst => {
+        if (this.context.componentInstances[componentId]) {
+          this.context.componentInstances[componentId][id] = inst
+        } else {
+          this.context.componentInstances[componentId] = {id: inst}
+        }
+      }}/>
     }
     const {nodes, idsByName, symbolIds} = this.context.data
     const nodeId = id ? id : idsByName[name]
