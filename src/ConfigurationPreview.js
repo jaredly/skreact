@@ -55,6 +55,7 @@ export default class ConfigurationPreview extends Component {
       items.push({
         title: 'Delete configuration',
         action: this.props.deleteConfiguration,
+        style: {color: 'red'},
       })
     }
     return <Menu

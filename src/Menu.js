@@ -10,6 +10,7 @@ const Menu = ({items, onClose}: *) => (
     {items.map((item, i) => (
       <div key={i}
         onClick={() => (onClose(), item.action())}
+        style={item.style}
         className={css(
           styles.item,
           i === 0 && styles.firstItem,

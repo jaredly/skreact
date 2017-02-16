@@ -138,6 +138,7 @@ export default class App extends Component {
           selectFromClick={this.selectFromClick}
           selectConfiguration={() => this.setState({currentConfiguration: id})}
           removeConfiguration={() => this.hideConfiguration(id)}
+          deleteConfiguration={() => this.deleteConfiguration(id)}
         />
       })}
     </div>
@@ -267,6 +268,28 @@ export default class App extends Component {
           ...data.components,
           [currentComponent]: {
             ...data.components[currentComponent],
+            visibleConfigurations: visibleConfigurations.filter(cid => cid !== id),
+          }
+        }
+      }
+    })
+  }
+
+  deleteConfiguration = (id: string) => {
+    const {currentComponent, data} = this.state
+    if (!data) return
+    const {components} = data
+    const {visibleConfigurations} = components[currentComponent]
+    const configurations = {...data.components[currentComponent].savedConfigurations}
+    delete configurations[id]
+    this.setState({
+      data: {
+        ...data,
+        components: {
+          ...data.components,
+          [currentComponent]: {
+            ...data.components[currentComponent],
+            savedConfigurations: configurations,
             visibleConfigurations: visibleConfigurations.filter(cid => cid !== id),
           }
         }
