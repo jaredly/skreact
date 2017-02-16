@@ -46,12 +46,13 @@ const renderTree = (id, nodes, domNodes, symbols, hide, props, rootStyle = null)
   if (!node) return <span>Node not found</span>
   if (hide[node.uniqueName]) return null
   const myProps = props[node.uniqueName] || {}
-  const width = !node.style.width && node.childSize ? node.childSize.width : node.style.width
-  const height = !node.style.height && node.childSize ? node.childSize.height : node.style.height
+  const width = !node.importedStyle.width && node.childSize ? node.childSize.width : node.importedStyle.width
+  const height = !node.importedStyle.height && node.childSize ? node.childSize.height : node.importedStyle.height
   const style = {
-    ...node.style,
+    ...node.importedStyle,
     width,
     height,
+    ...node.style,
     ...rootStyle,
     ...myProps.style,
   }

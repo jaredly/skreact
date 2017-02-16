@@ -143,10 +143,11 @@ const nodeBaseFromLayer = (layer: any, idsByName: any): NodeBase => ({
     id: layer.objectID,
     name: layer.name,
     uniqueName: findUniqueName(layer.name, idsByName), // TODO fill in
-    style: {
+    importedStyle: {
       ...styleFromLayer(layer),
       ...styleExtraFromLayer(layer),
-    }
+    },
+    style: {},
 })
 
 const nodeFromLayer = (layer: any, idsByName: any, components: any): NodeT => {
@@ -155,6 +156,7 @@ const nodeFromLayer = (layer: any, idsByName: any, components: any): NodeT => {
     id: layer,
     uniqueName: findUniqueName('errorImporting', idsByName),
     name: 'errorImporting',
+    importedStyle: {},
     style: {},
   } : {
     ...nodeBaseFromLayer(layer, idsByName),
@@ -172,8 +174,8 @@ const calcChildSize = (children, byId) => {
   let h = 0
   children.forEach(id => {
     const child = byId[id]
-    w = Math.max(child.style.left + Math.max(child.style.width, child.childSize ? child.childSize.width : 0), w)
-    h = Math.max(child.style.top + Math.max(child.style.height, child.childSize ? child.childSize.height : 0), h)
+    w = Math.max(child.importedStyle.left + Math.max(child.importedStyle.width, child.childSize ? child.childSize.width : 0), w)
+    h = Math.max(child.importedStyle.top + Math.max(child.importedStyle.height, child.childSize ? child.childSize.height : 0), h)
   })
   return {width: w, height: h}
 }

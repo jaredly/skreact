@@ -38,6 +38,8 @@ export default class ConfigurationPreview extends Component {
       <Component style={{
         boxShadow: '0 1px 5px #000',
         position: 'relative', top: 0, left: 0,
+      }} ref={inst => {
+        this.props.componentInstances.root = inst
       }} />
     </div>
   }

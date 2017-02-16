@@ -20,7 +20,7 @@ export default class Tree extends Component {
     super()
     this.state = {
       menu: null,
-      selected: 'root',
+      // selected: 'root',
     }
     this.setupHover()
   }
@@ -91,13 +91,8 @@ export default class Tree extends Component {
     })
   }
 
-  setSelected = (id: string) => {
-    this.setState({selected: id})
-  }
-
   render() {
-    const {currentComponent, nodes, components, idsByName} = this.props
-    const {selected} = this.state
+    const {currentComponent, nodes, components, idsByName, selected} = this.props
     const idsByComponentId = {}
     Object.keys(components).forEach(id => {
       idsByComponentId[id] = idsByName[components[id].Component.rootName]
@@ -105,7 +100,7 @@ export default class Tree extends Component {
     const root = idsByComponentId[currentComponent]
     return <div className={css(styles.container)}>
       <div
-        onClick={() => this.setState({selected: 'root'})}
+        onClick={() => this.props.setSelected('root')}
         className={css(styles.root, selected === 'root' && styles.rootSelected)}
       >
         {components[currentComponent].name}
@@ -118,7 +113,7 @@ export default class Tree extends Component {
         idsByComponentId={idsByComponentId}        
         components={components}
         selected={selected}
-        setSelected={this.setSelected}
+        setSelected={this.props.setSelected}
         isRoot
       />
       {this.state.menu &&

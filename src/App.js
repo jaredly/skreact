@@ -28,6 +28,8 @@ export default class App extends Component {
     currentComponent: string,
     componentInstances: any,
     domNodes: any,
+    selectedTreeItem: string,
+    currentConfiguration: string,
   }
 
   constructor() {
@@ -39,6 +41,8 @@ export default class App extends Component {
       // TODO clear these out whenever changing current component
       domNodes: {},
       componentInstances: {},
+      selectedTreeItem: 'root',
+      currentConfiguration: 'default',
     }
   }
 
@@ -106,25 +110,20 @@ export default class App extends Component {
       {visibleConfigurations.map(id => {
         if (!this.state.domNodes[id]) this.state.domNodes[id] = {}
         if (!this.state.componentInstances[id]) this.state.componentInstances[id] = {}
-        if (id === 'default') {
-          return <ConfigurationPreview
-            key={id}
-            Component={Component}
-            config={undefined}
-            domNodes={this.state.domNodes[id]}
-            componentInstances={this.state.componentInstances[id]}
-          />
-        } else {
-          return <ConfigurationPreview
-            key={id}
-            Component={Component}
-            config={savedConfigurations[id]}
-            domNodes={this.state.domNodes[id]}
-            componentInstances={this.state.componentInstances[id]}
-          />
-        }
+        return <ConfigurationPreview
+          key={id}
+          Component={Component}
+          current={this.state.currentConfiguration === id}
+          config={id === 'default' ? undefined : savedConfigurations[id]}
+          domNodes={this.state.domNodes[id]}
+          componentInstances={this.state.componentInstances[id]}
+        />
       })}
     </div>
+  }
+
+  setSelectedTreeItem = (item: string) => {
+    this.setState({selectedTreeItem: item})
   }
 
   render() {
@@ -133,9 +132,10 @@ export default class App extends Component {
       return this.renderEmpty()
     }
     const {nodes, idsByName, components} = this.state.data
-    const {currentComponent} = this.state
+    const {currentComponent, selectedTreeItem} = this.state
     const {Component, source} = components[currentComponent]
     const root = idsByName[Component.rootName]
+    const configurations = this.renderConfigurations()
     return <div className={css(styles.container)}>
       <div className={css(styles.toolbar)}>
       </div>
@@ -151,11 +151,19 @@ export default class App extends Component {
             <div>Instance Tree</div>
           </Header>
           <Tree
-            currentComponent={currentComponent}
             nodes={nodes}
-            domNodes={this.state.domNodes}
+            currentComponent={currentComponent}
+            domNodes={this.state.domNodes[this.state.currentConfiguration]}
             components={components}
             idsByName={idsByName}
+            selected={selectedTreeItem}
+            setSelected={this.setSelectedTreeItem}
+          />
+          <ConfigurationViewer
+            nodes={nodes}
+            configuration={components[currentComponent].savedConfigurations[this.state.currentConfiguration]}
+            selectedTreeItem={selectedTreeItem}
+            componentInstances={this.state.componentInstances[this.state.currentConfiguration]}
           />
         </div>
         <div className={css(styles.preview)}>
@@ -163,7 +171,7 @@ export default class App extends Component {
           >
             <div>Application Preview</div>
           </Header>
-          {this.renderConfigurations()}
+          {configurations}
         </div>
         <div className={css(styles.editor)}>
           <Editor
@@ -175,6 +183,25 @@ export default class App extends Component {
       </div>
     </div>
   }
+}
+
+const ConfigurationViewer = ({nodes, selectedTreeItem, componentInstances, configuration}) => {
+  const props = selectedTreeItem !== 'root' ?
+    nodes[selectedTreeItem] :
+    (configuration ? configuration.props : (componentInstances.root && componentInstances.root.props))
+  return <div>
+    <Header
+    >
+      <div>Props</div>
+    </Header>
+    <pre>
+      {JSON.stringify(props, null, 2)}
+      </pre>
+    <Header
+    >
+      <div>State</div>
+    </Header>
+  </div>
 }
 
 const styles = StyleSheet.create({

@@ -6,6 +6,7 @@ export type NodeBase = {
   id: ObjectId,
   name: string,
   uniqueName: string,
+  importedStyle: any,
   style: any,
   // TODO make a distinction between "imported styles" and "overridden styles"
   // e.g. we'll want to do layout things w/ the "overridden styles" stuff
@@ -71,7 +72,8 @@ export type SkreactFile = {
       source: string,
       Component: any & {rootName: string},
       savedConfigurations: {
-        [name: string]: {
+        [id: string]: {
+          name: string,
           props: any,
           state: any,
         },
