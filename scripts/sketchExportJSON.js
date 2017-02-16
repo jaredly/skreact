@@ -334,6 +334,8 @@ function _convertGeneric(data) {
     return convMSModelObjectCommonIface(data)
   } else if (data instanceof MSImmutableModelObject) {
     return convMSImmutableModelObjectIface(data)
+  } else if (data instanceof MSBitmapLayer) {
+    return convMSBitmapLayerIface(data)
   }
     // NSColor
   else if (data.redComponent && data.greenComponent) {
@@ -506,7 +508,7 @@ function convMSDocumentIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -535,7 +537,7 @@ function convMSContentDrawViewControllerIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -550,11 +552,11 @@ function convNSViewIface(data) {
   converteds[idx] = {
     $type: "NSView",
     objectID: data.objectID ? data.objectID() + '' : null,
-    
+
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -580,7 +582,7 @@ function convMSRulerViewIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -607,7 +609,7 @@ function convMSRulerViewLayerIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -622,11 +624,11 @@ function convNSColorIface(data) {
   converteds[idx] = {
     $type: "NSColor",
     objectID: data.objectID ? data.objectID() + '' : null,
-    
+
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -667,7 +669,7 @@ function convMSContentDrawViewIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -687,7 +689,7 @@ function convMSViewPortIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -718,7 +720,7 @@ function convMSTiledLayerPileIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -877,7 +879,7 @@ function convBCCacheIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -892,11 +894,11 @@ function convNSSetIface(data) {
   converteds[idx] = {
     $type: "NSSet",
     objectID: data.objectID ? data.objectID() + '' : null,
-    
+
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -1522,7 +1524,7 @@ function convMSImageDataIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -1537,11 +1539,11 @@ function convNSImageIface(data) {
   converteds[idx] = {
     $type: "NSImage",
     objectID: data.objectID ? data.objectID() + '' : null,
-    
+
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -1556,11 +1558,11 @@ function convNSDataIface(data) {
   converteds[idx] = {
     $type: "NSData",
     objectID: data.objectID ? data.objectID() + '' : null,
-    
+
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -1854,11 +1856,11 @@ function convNSMenuIface(data) {
   converteds[idx] = {
     $type: "NSMenu",
     objectID: data.objectID ? data.objectID() + '' : null,
-    
+
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -2451,7 +2453,7 @@ function convNSAffineTransformIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -2674,11 +2676,11 @@ function convNSMutableArrayIface(data) {
   converteds[idx] = {
     $type: "NSMutableArray",
     objectID: data.objectID ? data.objectID() + '' : null,
-    
+
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -2702,7 +2704,7 @@ function convMSCacheManagerIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -2727,7 +2729,7 @@ function convMSEventHandlerManagerIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -2786,7 +2788,7 @@ function convMSMouseTrackerIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -2801,11 +2803,11 @@ function convMSDuplicateOffsetTrackerIface(data) {
   converteds[idx] = {
     $type: "MSDuplicateOffsetTracker",
     objectID: data.objectID ? data.objectID() + '' : null,
-    
+
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -2932,7 +2934,7 @@ function convMSOpacityKeyboardShortcutRecognizerIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -2959,7 +2961,7 @@ function convMSNormalEventDataIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -2980,7 +2982,7 @@ function convMSSnapperDataIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -2995,11 +2997,11 @@ function convNSMutableDictionaryIface(data) {
   converteds[idx] = {
     $type: "NSMutableDictionary",
     objectID: data.objectID ? data.objectID() + '' : null,
-    
+
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -3026,7 +3028,7 @@ function convMSNormalEventContextualMenuBuilderIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -3045,7 +3047,7 @@ function convMSLayerArrayIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -3066,7 +3068,7 @@ function convMSBackButtonWindowControllerIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -3081,11 +3083,11 @@ function convNSTimerIface(data) {
   converteds[idx] = {
     $type: "NSTimer",
     objectID: data.objectID ? data.objectID() + '' : null,
-    
+
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -3100,11 +3102,11 @@ function convNSMutableSetIface(data) {
   converteds[idx] = {
     $type: "NSMutableSet",
     objectID: data.objectID ? data.objectID() + '' : null,
-    
+
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -3145,7 +3147,7 @@ function convBCSideBarViewControllerIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -3185,7 +3187,7 @@ function convBCOutlineViewControllerIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -3200,11 +3202,11 @@ function convNSTextFieldIface(data) {
   converteds[idx] = {
     $type: "NSTextField",
     objectID: data.objectID ? data.objectID() + '' : null,
-    
+
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -3219,11 +3221,11 @@ function convNSEventIface(data) {
   converteds[idx] = {
     $type: "NSEvent",
     objectID: data.objectID ? data.objectID() + '' : null,
-    
+
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -3250,7 +3252,7 @@ function convBCOutlineViewDataControllerIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -3273,7 +3275,7 @@ function convBCFilterInfoIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -3296,7 +3298,7 @@ function convBCOutlineViewIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -3311,7 +3313,7 @@ function convBCPageListViewControllerIface(data) {
   converteds[idx] = {
     $type: "BCPageListViewController",
     objectID: data.objectID ? data.objectID() + '' : null,
-    
+
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
@@ -3370,7 +3372,7 @@ function convBCTableCellViewIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -3391,7 +3393,7 @@ function convBCCollapsableImageViewIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -3406,11 +3408,11 @@ function convNSWindowIface(data) {
   converteds[idx] = {
     $type: "NSWindow",
     objectID: data.objectID ? data.objectID() + '' : null,
-    
+
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -3432,7 +3434,7 @@ function convMSFontListIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -3462,7 +3464,7 @@ function convMSInspectorControllerIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -3525,7 +3527,7 @@ function convMSShareButtonHandlerIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -3552,7 +3554,7 @@ function convBCPopoverIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -3572,7 +3574,7 @@ function convBCPopoverWindowIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -3587,11 +3589,11 @@ function convNSViewControllerIface(data) {
   converteds[idx] = {
     $type: "NSViewController",
     objectID: data.objectID ? data.objectID() + '' : null,
-    
+
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -3612,7 +3614,7 @@ function convMSColorPreviewButtonIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -3687,11 +3689,11 @@ function convMSFlippedViewIface(data) {
   converteds[idx] = {
     $type: "MSFlippedView",
     objectID: data.objectID ? data.objectID() + '' : null,
-    
+
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -3710,7 +3712,7 @@ function convMSInspectorStackViewIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -3765,7 +3767,7 @@ function convMSNormalInspectorIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -3817,7 +3819,7 @@ function convMSVersionedArchiveIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -3832,11 +3834,11 @@ function convNSURLIface(data) {
   converteds[idx] = {
     $type: "NSURL",
     objectID: data.objectID ? data.objectID() + '' : null,
-    
+
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -3861,7 +3863,7 @@ function convMSHistoryMakerIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -3888,7 +3890,7 @@ function convMSHistoryIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -3910,7 +3912,7 @@ function convMSMomentIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -3930,7 +3932,7 @@ function convMSActionControllerIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -3951,7 +3953,7 @@ function convMSToolbarConstructorIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -3977,7 +3979,7 @@ function convMSMainSplitViewControllerIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -4086,11 +4088,11 @@ function convNSBezierPathIface(data) {
   converteds[idx] = {
     $type: "NSBezierPath",
     objectID: data.objectID ? data.objectID() + '' : null,
-    
+
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -4115,7 +4117,7 @@ function convMSPathIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -4222,11 +4224,11 @@ function convNSAttributedStringIface(data) {
   converteds[idx] = {
     $type: "NSAttributedString",
     objectID: data.objectID ? data.objectID() + '' : null,
-    
+
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -4251,7 +4253,7 @@ function convMSAttributedStringIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -4624,7 +4626,7 @@ function convMSSymbolInstanceIface(data) {
   converteds[idx] = {
     $type: "MSSymbolInstance",
     objectID: data.objectID ? data.objectID() + '' : null,
-    
+
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
@@ -4650,7 +4652,7 @@ function convMSSymbolMasterIface(data) {
   converteds[idx] = {
     $type: "MSSymbolMaster",
     objectID: data.objectID ? data.objectID() + '' : null,
-    
+
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
@@ -4688,7 +4690,7 @@ function convMSImmutableSymbolMasterIface(data) {
   converteds[idx] = {
     $type: "MSImmutableSymbolMaster",
     objectID: data.objectID ? data.objectID() + '' : null,
-    
+
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
@@ -4793,7 +4795,7 @@ function convMSModelObjectCommonIface(data) {
 
     // inherited
     // TODO maybe enable some time? figure out what's crashing
-    // 
+    //
   }
   return {$ref: idx}
 }
@@ -4815,6 +4817,83 @@ function convMSImmutableModelObjectIface(data) {
     // inherited
     // TODO maybe enable some time? figure out what's crashing
     // hasModelObjectCacheGeneration: data.hasModelObjectCacheGeneration ? !!data.hasModelObjectCacheGeneration() : null,
+  }
+  return {$ref: idx}
+}
+
+function convMSBitmapLayerIface(data) {
+  var idx = natives.indexOf(data)
+  if (idx !== -1) return {$ref: idx}
+  idx = natives.length
+  natives.push(data)
+  // log('converting MSBitmapLayer')
+  if (!data) return null
+  converteds[idx] = {
+    $type: "MSBitmapLayer",
+    objectID: data.objectID ? data.objectID() + '' : null,
+    canReduceImageSize: data.canReduceImageSize ? !!data.canReduceImageSize() : null,
+    targetSizeForReduction: data.targetSizeForReduction ? convCGSizeStruct(data.targetSizeForReduction()) : null,
+    CGTransformForFrame: data.CGTransformForFrame ? convCGAffineTransformStruct(data.CGTransformForFrame()) : null,
+    bounds: data.bounds ? convCGRectStruct(data.bounds()) : null,
+    clippingMask: data.clippingMask ? convCGRectStruct(data.clippingMask()) : null,
+    debugDescription: data.debugDescription ? data.debugDescription() + '' : null,
+    description: data.description ? data.description() + '' : null,
+    exportOptionsGeneric: data.exportOptionsGeneric ? convMSExportOptionsIface(data.exportOptionsGeneric()) : null,
+    fillReplacesImage: data.fillReplacesImage ? !!data.fillReplacesImage() : null,
+    frameGeneric: data.frameGeneric ? convMSRectIface(data.frameGeneric()) : null,
+    hasTransforms: data.hasTransforms ? !!data.hasTransforms() : null,
+    image: data.image ? convMSImageDataIface(data.image()) : null,
+    isFlippedHorizontal: data.isFlippedHorizontal ? !!data.isFlippedHorizontal() : null,
+    isFlippedVertical: data.isFlippedVertical ? !!data.isFlippedVertical() : null,
+    isLayerExportable: data.isLayerExportable ? !!data.isLayerExportable() : null,
+    isLocked: data.isLocked ? !!data.isLocked() : null,
+    isSelected: data.isSelected ? !!data.isSelected() : null,
+    isVisible: data.isVisible ? !!data.isVisible() : null,
+    layerListExpandedType: data.layerListExpandedType ? +data.layerListExpandedType() : null,
+    name: data.name ? data.name() + '' : null,
+    nameIsFixed: data.nameIsFixed ? !!data.nameIsFixed() : null,
+    nineSliceCenterRect: data.nineSliceCenterRect ? convCGRectStruct(data.nineSliceCenterRect()) : null,
+    nineSliceScale: data.nineSliceScale ? convCGSizeStruct(data.nineSliceScale()) : null,
+    origin: data.origin ? convCGPointStruct(data.origin()) : null,
+    originalObjectID: data.originalObjectID ? data.originalObjectID() + '' : null,
+    rect: data.rect ? convCGRectStruct(data.rect()) : null,
+    resizingType: data.resizingType ? +data.resizingType() : null,
+    rotation: data.rotation ? +data.rotation() : null,
+    shouldBreakMaskChain: data.shouldBreakMaskChain ? !!data.shouldBreakMaskChain() : null,
+    styleGeneric: data.styleGeneric ? convMSStyleIface(data.styleGeneric()) : null,
+
+    // inherited
+    // TODO maybe enable some time? figure out what's crashing
+    // style: data.style ? convMSStyleIface(data.style()) : null,
+    // absoluteRect: data.absoluteRect ? convMSAbsoluteRectIface(data.absoluteRect()) : null,
+    // isHovering: data.isHovering ? !!data.isHovering() : null,
+    // center: data.center ? convCGPointStruct(data.center()) : null,
+    // transformStruct: data.transformStruct ? conv_CHTransformStructStruct(data.transformStruct()) : null,
+    // absolutePosition: data.absolutePosition ? convCGPointStruct(data.absolutePosition()) : null,
+    // isExpanded: data.isExpanded ? !!data.isExpanded() : null,
+    // proportions: data.proportions ? +data.proportions() : null,
+    // constrainProportions: data.constrainProportions ? !!data.constrainProportions() : null,
+    // styledLayer: data.styledLayer ? convMSStyledLayerIface(data.styledLayer()) : null,
+    // userVisibleRotation: data.userVisibleRotation ? +data.userVisibleRotation() : null,
+    // isExportableViaDragAndDrop: data.isExportableViaDragAndDrop ? !!data.isExportableViaDragAndDrop() : null,
+    // hasSliceIcon: data.hasSliceIcon ? !!data.hasSliceIcon() : null,
+    // selectedInLayerList: data.selectedInLayerList ? !!data.selectedInLayerList() : null,
+    // expandableInLayerList: data.expandableInLayerList ? !!data.expandableInLayerList() : null,
+    // nodeName: data.nodeName ? data.nodeName() + '' : null,
+    // selectedBadgeMenuItem: data.selectedBadgeMenuItem ? +data.selectedBadgeMenuItem() : null,
+    // badgeMenu: data.badgeMenu ? convNSMenuIface(data.badgeMenu()) : null,
+    // previewImages: data.previewImages ? convertDictionary(data.previewImages()) : null,
+    // badgeMap: data.badgeMap ? convertDictionary(data.badgeMap()) : null,
+    // hasHighlight: data.hasHighlight ? !!data.hasHighlight() : null,
+    // isActive: data.isActive ? !!data.isActive() : null,
+    // filterType: data.filterType ? +data.filterType() : null,
+    // displayType: data.displayType ? +data.displayType() : null,
+    // frame: data.frame ? convMSRectIface(data.frame()) : null,
+    // exportOptions: data.exportOptions ? convMSExportOptionsIface(data.exportOptions()) : null,
+    // documentData: data.documentData ? convMSDocumentDataIface(data.documentData()) : null,
+    // isFault: data.isFault ? !!data.isFault() : null,
+    // hasModelObjectCacheGeneration: data.hasModelObjectCacheGeneration ? !!data.hasModelObjectCacheGeneration() : null,
+    imageData: data.image().data().base64EncodedStringWithOptions([]) + '',
   }
   return {$ref: idx}
 }

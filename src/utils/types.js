@@ -14,19 +14,23 @@ export type NodeBase = {
 
 export type NodeT = ({
   type: 'ComponentInstance',
-  replacedObjectId: string, // this is the objectID of the thing that was replaced.
-  // Umm maybe not props:  -  these need to be passed in from up top
+  replacedObjectId: ObjectId, // this is the objectID of the thing that was replaced.
+  componentId: ObjectId,
 } & NodeBase) | ({
   type: 'SymbolMaster',
   svgSource: string,
   symbolId: string,
   children: ObjectId[],
+  childSize: {width: number, height: number},
 } & NodeBase) | ({
   type: 'Group',
   children: ObjectId[],
+  childSize: {width: number, height: number},
+  /*
 } & NodeBase) | ({
   type: 'SymbolInstance',
   symbolId: string, // TODO can we drop this (& replace w/ the objectid)? I wonder if we need it for syncing
+  */
 } & NodeBase) | ({
   type: 'ShapeGroup',
   svgSource: string,
@@ -34,11 +38,16 @@ export type NodeT = ({
   type: 'Text',
   stringValue: string,
 } & NodeBase) | ({
+  type: 'Image',
+  imageData: string,
+  tintColor: ?string,
+} & NodeBase) | ({
+  type: 'Hole',
+} & NodeBase) | ({
   // TODO I should handle ovals as well
   type: 'Rectangle',
   svgSource: string,
 } & NodeBase) | ({
-  // TODO I should handle ovals as well
   type: 'ImportError',
 } & NodeBase)
 
@@ -53,14 +62,12 @@ export type SkreactFile = {
     [id: ObjectId]: NodeT,
     // Soooo maybe this also have component instances too? maybe shouldn't hurt.
   },
-  symbolIds: {
-    [name: string]: ObjectId,
-  },
   idsByName: {
     [name: string]: ObjectId,
   },
   components: {
-    [name: string]: {
+    [id: string]: {
+      name: string,
       source: string,
       Component: any & {rootName: string},
       savedConfigurations: {

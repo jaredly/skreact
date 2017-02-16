@@ -1,8 +1,9 @@
 // @flow
 
 import inflate from './inflateDump'
+import uuid from './uuid'
 
-import type {Node, /*NodeExtra, */NodeBase, ObjectId} from './types'
+import type {NodeT, /*NodeExtra, */NodeBase, ObjectId} from './types'
 
 const color2string = color => color && `rgba(${color.r * 255}, ${color.g * 255}, ${color.b * 255}, ${color.a})`
 
@@ -25,20 +26,33 @@ const cshadow = shadow => shadow &&
 
 const isRectangleGroup = thing => thing.layers.length === 1 && thing.layers[0].$type === 'MSRectangleShape'
 
-const nodeExtraFromLayer = (layer: any) => {
+const nodeExtraFromLayer = (layer: any, components: any) => {
   switch (layer.$type) {
     case 'MSSymbolMaster':
       return {type: 'SymbolMaster', svgSource: layer.svgString, children: [], symbolId: layer.symbolID}
     case 'MSSymbolInstance':
-      return {type: 'SymbolInstance', symbolId: layer.symbolID}
+      return {
+        type: 'ComponentInstance',
+        componentId: components[layer.symbolID].id,
+        replacedObjectId: layer.objectID,
+      }
+      // return {type: 'SymbolInstance', symbolId: layer.symbolID}
     case 'MSShapeGroup':
-      if (isRectangleGroup(layer)) {
-        return {type: 'Rectangle', svgSource: layer.svgString}
-      } else {
+      if (!isRectangleGroup(layer) || (layer.styleGeneric.fill && layer.styleGeneric.fill.image)) {
         return {type: 'ShapeGroup', svgSource: layer.svgString}
+      } else {
+        return {type: 'Rectangle', svgSource: layer.svgString}
       }
     case 'MSTextLayer':
       return {type: 'Text', stringValue: layer.stringValue}
+    case 'MSBitmapLayer':
+      return {
+        type: 'Image',
+        imageData: layer.imageData,
+        tintColor: layer.fillReplacesImage
+          ? color2string(ccolor(layer.styleGeneric.fill.colorGeneric))
+          : null,
+      }
     default:
       return {type: 'Group', children: []}
   }
@@ -103,7 +117,7 @@ const styleExtraFromLayer = (layer: any) => {
       }
     case 'MSArtboardGroup':
       return {
-        boxShadow: '0 1px 5px #000',
+        // boxShadow: '0 1px 5px #000',
         overflow: 'hidden',
       }
     default:
@@ -135,7 +149,7 @@ const nodeBaseFromLayer = (layer: any, idsByName: any): NodeBase => ({
     }
 })
 
-const nodeFromLayer = (layer: any, idsByName: any): Node => {
+const nodeFromLayer = (layer: any, idsByName: any, components: any): NodeT => {
   const node = typeof layer === 'string' ? {
     type: 'ImportError',
     id: layer,
@@ -144,16 +158,34 @@ const nodeFromLayer = (layer: any, idsByName: any): Node => {
     style: {},
   } : {
     ...nodeBaseFromLayer(layer, idsByName),
-    ...nodeExtraFromLayer(layer),
+    ...nodeExtraFromLayer(layer, components),
+  }
+  if (node.type === 'ComponentInstance') {
+    node.id = uuid()
   }
   // $FlowFixMe I want to use an intersection of unions but bugs https://github.com/facebook/flow/issues/3391
   return node
 }
 
-const processLayer = (layer, byId, idsByName): ObjectId => {
-  const node: Node = nodeFromLayer(layer, idsByName)
+const calcChildSize = (children, byId) => {
+  let w = 0
+  let h = 0
+  children.forEach(id => {
+    const child = byId[id]
+    w = Math.max(child.style.left + Math.max(child.style.width, child.childSize ? child.childSize.width : 0), w)
+    h = Math.max(child.style.top + Math.max(child.style.height, child.childSize ? child.childSize.height : 0), h)
+  })
+  return {width: w, height: h}
+}
+
+const processLayer = (layer, byId, idsByName, components): ObjectId => {
+  const node: NodeT = nodeFromLayer(layer, idsByName, components)
   if (node.type === 'SymbolMaster') {
     node.id = node.symbolId
+    components[node.id] = {
+      rootName: node.uniqueName,
+      id: uuid(),
+    }
   }
   idsByName[node.uniqueName] = node.id
   byId[node.id] = node
@@ -163,7 +195,8 @@ const processLayer = (layer, byId, idsByName): ObjectId => {
       if (!layer.layers) {
         debugger
       }
-      node.children = layer.layers.map(child => processLayer(child, byId, idsByName))
+      node.children = layer.layers.map(child => processLayer(child, byId, idsByName, components))
+      node.childSize = calcChildSize(node.children, byId)
   }
   return node.id
 }
@@ -177,21 +210,26 @@ function findUniqueName(name, idsByName) {
   throw new Error("no unique name for " + name)
 }
 
+type Components = {
+  [symbolId: string]: {
+    rootName: string,
+    id: string,
+  }
+}
+
 function processDump({root, converteds}: any) {
   const symbols = {}
   inflate(converteds, symbols)
   const byId = {}
   const idsByName = {}
+  const components = {}
   for (let id in symbols) {
-    symbols[id] = processLayer(symbols[id], byId, idsByName)
+    symbols[id] = processLayer(symbols[id], byId, idsByName, components)
   }
-  console.log('ha')
-  // const doc = converteds[0]
-  // const page = doc.documentData.pages[0]
   const artboard = converteds[0]
   const nodes = {}
-  const id = processLayer(artboard, byId, idsByName)
-  const res =  { root: id, symbols, byId, idsByName }
+  const id = processLayer(artboard, byId, idsByName, components)
+  const res =  { root: id, symbols, byId, idsByName, components }
   window.RES = res
   return res
 }

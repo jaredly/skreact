@@ -30,6 +30,7 @@ const starts = [
   'MSArtboardGroup',
   'MSImmutableSymbolMaster',
   'MSImmutableSharedStyle',
+  'MSBitmapLayer',
 ]
 
 const clearedForInheritance = [
@@ -47,6 +48,7 @@ const clearedForInheritance = [
 const extraProps = {
   'MSShapeGroup': `\n    svgString: generateSVGString(data) + '',`,
   'MSSymbolMaster': `\n    svgString: generateSVGString(data) + '',`,
+  'MSBitmapLayer': `\n    imageData: data.image().data().base64EncodedStringWithOptions([]) + '',`,
 }
 const extraCode = {
   'MSSymbolInstance': '\n    referencedSymbols[data.symbolID()] = true',

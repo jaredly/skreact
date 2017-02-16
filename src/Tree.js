@@ -2,6 +2,7 @@ import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
 import ContextMenu from './ContextMenu'
+import Icon from './Icon'
 
 const ext = (a, b) => {
   const prev = {}
@@ -39,15 +40,18 @@ export default class Tree extends Component {
 
   hover = id => {
     if (!id) {
-      if (!this._hovering) return
       this._hover.style.display = 'none'
+      if (!this._hovering) return
+      /* Moving dom nodes around was expensive
       this._placeholder.parentNode.replaceChild(this._hovering, this._placeholder)
       ext(this._hovering.style, this._prevstyle)
       this._hovering = null
+      */
     } else {
       const node = this.props.domNodes[id]
       if (!node) return console.log('node missing for hover', id)
       const box = node.getBoundingClientRect()
+      /* Moving dom nodes around was expensive
       this._hovering = node
       this._prevstyle = ext(node.style, {
         top: box.top + 'px',
@@ -59,6 +63,9 @@ export default class Tree extends Component {
         zIndex: 100000,
         boxShadow: '0 0 10px #555',
       })
+      node.parentNode.replaceChild(this._placeholder, node)
+      document.body.appendChild(node)
+      */
       ext(this._hover.style, {
         top: box.top + 'px',
         left: box.left + 'px',
@@ -66,8 +73,6 @@ export default class Tree extends Component {
         height: box.height + 'px',
         display: 'block',
       })
-      node.parentNode.replaceChild(this._placeholder, node)
-      document.body.appendChild(node)
     }
   }
 
@@ -104,6 +109,15 @@ export default class Tree extends Component {
   }
 }
 
+const iconForNode = node => {
+  if (node.type === 'SymbolInstance') {
+    return <Icon name='ios-refresh-empty' className={css(styles.icon)} />
+  }
+  if (node.type === 'ComponentInstance') {
+    return <Icon name='ios-gear-outline' className={css(styles.icon)} />
+  }
+}
+
 class TreeNode extends Component  {
   constructor(props) {
     super()
@@ -128,7 +142,10 @@ class TreeNode extends Component  {
           onClick={() => this.setState({open: !this.state.open})}
           onContextMenu={evt => this.props.onContextMenu(root, evt)}
         >
-          {children && children.length ? '> ' : null}
+          {(children && children.length ? <Icon className={css(styles.icon)}
+            name={this.state.open ? 'ios-arrow-down' : 'ios-arrow-right'}
+          /> : null)}
+          {iconForNode(node)}
           {nodes[root].uniqueName}
         </div>
         {this.state.open && children && <div style={{
@@ -153,11 +170,20 @@ class TreeNode extends Component  {
 
 const styles = StyleSheet.create({
   treeName: {
+    flexDirection: 'row',
     padding: '5px 10px',
     cursor: 'pointer',
     ':hover': {
       backgroundColor: '#eee',
     }
   },
+
+  icon: {
+    fontSize: 16,
+    width: 16,
+    alignItems: 'center',
+    lineHeight: '18px',
+    marginRight: 5,
+  }
 })
 

@@ -6,6 +6,8 @@ import Hairline from './Hairline'
 
 import {colors} from './styles'
 
+const cmp = (a, b) => a < b ? -1 : (a > b ? 1 : 0)
+
 export default class ComponentList extends Component {
   constructor() {
     super()
@@ -16,19 +18,19 @@ export default class ComponentList extends Component {
 
   render() {
     const {components, selected} = this.props
-    const names = Object.keys(components).sort()
+    const ids = Object.keys(components).sort((a, b) => cmp(components[a].name, components[b].name))
     return <div className={css(styles.container)}>
       <Header>
           Components
       </Header>
       <div className={css(styles.names)}>
-        {names.map(name => (
+        {ids.map(id => (
           <div
-            key={name}
-            onClick={() => this.props.onSelect(name)}
-            className={css(styles.name, name === selected && styles.selectedName)}
+            key={id}
+            onClick={() => this.props.onSelect(id)}
+            className={css(styles.name, id === selected && styles.selectedName)}
           >
-            {name}
+            {components[id].name}
           </div>
         ))}
       </div>
@@ -43,12 +45,19 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 100,
     padding: '7px 10px',
-    color: '#aaa',
+    color: '#888',
+    cursor: 'pointer',
+    ':hover': {
+      backgroundColor: '#eee',
+    }
   },
 
   selectedName: {
     backgroundColor: colors.highlight,
     color: 'white',
+    ':hover': {
+      backgroundColor: colors.highlight,
+    }
   },
 
   names: {

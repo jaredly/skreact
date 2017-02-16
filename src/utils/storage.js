@@ -13,7 +13,7 @@ import type {SkreactFile} from './types'
 const COMPONENTS_KEY = 'skreact:components'
 
 const initialComponent = (name, rootName) => {
-  const Component = () => <Node name={rootName} />
+  const Component = props => <Node name={rootName} {...props} />
   Component.displayName = name
   Component.rootName = rootName
   return Component
@@ -50,21 +50,42 @@ export const loadSavedState = () => {
     })
 }
 
+const pascalify = name => name
+  .replace(/[-\s]\w/g, x => x.slice(1).toUpperCase())
+  .replace(/^\w/, x => x.toUpperCase())
+
+const reifyComponents = components => {
+  const result = {}
+  for (let symbolId in components) {
+    const component = components[symbolId]
+    const name = pascalify(component.rootName)
+    result[component.id] = {
+      name,
+      source: defaultCode(name, component.rootName),
+      Component: initialComponent(name, component.rootName),
+      savedConfigurations: {},
+    }
+  }
+  return result
+}
+
 export const initialImport = (): SkreactFile => {
   // TODO get from not `window.DATA`
-  const data = processDump(window.DATA)
-  const rootName = data.byId[data.root].uniqueName
+  const {root, symbols, byId, idsByName, components} = processDump(window.DATA)
+  const rootName = byId[root].uniqueName
   const state = {
-    topLevelSketchNodeIds: [data.root],
-    nodes: data.byId,
-    idsByName: data.idsByName,
-    symbolIds: data.symbols,
+    topLevelSketchNodeIds: [root],
+    nodes: byId,
+    idsByName: idsByName,
+    // symbolIds: symbols,
     components: {
-      Application: {
+      root: {
+        name: 'Application',
         source: defaultCode('Application', rootName),
         Component: initialComponent('Application', rootName),
         savedConfigurations: {},
       },
+      ...reifyComponents(components),
     },
   }
   // TODO should I inflate the Application here?

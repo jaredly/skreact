@@ -29,6 +29,7 @@ class ${name} extends Component {
           onClick: () => this.setState({showingKeys: !this.state.showingKeys}),
         },
       }}
+      {...this.props}
     />
   }
 }

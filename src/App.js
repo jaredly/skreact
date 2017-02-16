@@ -35,7 +35,7 @@ export default class App extends Component {
     this.state = {
       loading: true,
       data: null,
-      currentComponent: 'Application',
+      currentComponent: 'root',
       domNodes: {},
     }
   }
@@ -58,15 +58,17 @@ export default class App extends Component {
   }
 
   commitComponent = (text: string) => {
-    const name = this.state.currentComponent
-    const Component = evalComponent(name, text, Node)
+    const id = this.state.currentComponent
+    if (!this.state.data) return
+    const {data} = this.state
+    const Component = evalComponent(data.components[id].name, text, Node)
     if (!Component) {
       return
     }
-    if (!this.state.data) return
+    if (!data) return
     const components = {
-      ...this.state.data.components,
-      [name]: { Component, text },
+      ...data.components,
+      [id]: { ...data.components[id], Component, text },
     }
     // saveComponents(components)
     this.setState({data: {...this.state.data, components}})
@@ -110,16 +112,6 @@ export default class App extends Component {
           />
           <Header
           >
-            <div>Application Preview</div>
-          </Header>
-          <div className={css(styles.display)}>
-            <Component />
-          </div>
-        </div>
-        <Hairline />
-        <div className={css(styles.tree)}>
-          <Header
-          >
             <div>Instance Tree</div>
           </Header>
           <Tree
@@ -128,10 +120,22 @@ export default class App extends Component {
             domNodes={this.state.domNodes}
           />
         </div>
-        <Hairline />
+        <div className={css(styles.preview)}>
+          <Header
+          >
+            <div>Application Preview</div>
+          </Header>
+          <div className={css(styles.display)}>
+            <Component style={{
+              boxShadow: '0 1px 5px #000',
+              // backgroundColor: 'white',
+              position: 'relative', top: 0, left: 0,
+            }} />
+          </div>
+        </div>
         <div className={css(styles.editor)}>
           <Editor
-            name={currentComponent}
+            name={components[currentComponent].name}
             text={source}
             onSave={this.commitComponent}
           />
@@ -148,11 +152,15 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   leftSide: {
+    overflow: 'auto',
+    width: 300,
+  },
+  preview: {
     flex: 1,
     backgroundColor: '#3b3e40',
   },
   display: {
-    margin: 20,
+    padding: 20,
     position: 'relative',
     flex: 1,
     overflow: 'auto',
@@ -167,8 +175,6 @@ const styles = StyleSheet.create({
   },
 
   tree: {
-    overflow: 'auto',
-    width: 300,
   },
   treeName: {
     padding: '5px 10px',
