@@ -1,9 +1,10 @@
+// @flow
 import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
 import {colors} from './styles'
 
-const Header = ({children}) => <div className={css(styles.Header)}>{children}</div>;
+const Header = ({children}: any) => <div className={css(styles.Header)}>{children}</div>;
 export default Header
 
 const styles = StyleSheet.create({

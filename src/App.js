@@ -10,6 +10,8 @@ import Header from './Header'
 import Hairline from './Hairline'
 import ComponentList from './ComponentList'
 import ConfigurationPreview from './ConfigurationPreview'
+import StyleEditor from './StyleEditor'
+import Icon from './Icon'
 
 import evalComponent from './utils/evalComponent'
 import {colors} from './styles'
@@ -28,8 +30,10 @@ export default class App extends Component {
     currentComponent: string,
     componentInstances: any,
     domNodes: any,
+    propsMap: any,
     selectedTreeItem: string,
     currentConfiguration: string,
+    clickToSelect: boolean,
   }
 
   constructor() {
@@ -40,9 +44,11 @@ export default class App extends Component {
       currentComponent: 'root',
       // TODO clear these out whenever changing current component
       domNodes: {},
+      propsMap: {},
       componentInstances: {},
       selectedTreeItem: 'root',
       currentConfiguration: 'default',
+      clickToSelect: false,
     }
   }
 
@@ -66,6 +72,7 @@ export default class App extends Component {
     this.setState({
       currentComponent,
       domNodes: {},
+      propsMap: {},
       componentInstances: {},
     })
   }
@@ -109,21 +116,54 @@ export default class App extends Component {
     return <div className={css(styles.display)}>
       {visibleConfigurations.map(id => {
         if (!this.state.domNodes[id]) this.state.domNodes[id] = {}
+        if (!this.state.propsMap[id]) this.state.propsMap[id] = {}
         if (!this.state.componentInstances[id]) this.state.componentInstances[id] = {}
+        const selected = this.state.currentConfiguration === id
         return <ConfigurationPreview
           key={id}
           Component={Component}
-          current={this.state.currentConfiguration === id}
+          current={selected}
           config={id === 'default' ? undefined : savedConfigurations[id]}
           domNodes={this.state.domNodes[id]}
+          propsMap={this.state.propsMap[id]}
           componentInstances={this.state.componentInstances[id]}
+          clickToSelect={selected && this.state.clickToSelect}
+          selectFromClick={this.selectFromClick}
         />
       })}
     </div>
   }
 
+  onChangeStyle = (attr: ?string, value: any, prevAttr?: string) => {
+    const {data, selectedTreeItem} = this.state
+    if (!data) return
+    const style = {...data.nodes[selectedTreeItem].style}
+    if (prevAttr && prevAttr !== attr) {
+      delete style[prevAttr]
+    }
+    if (attr) {
+      style[attr] = value
+    }
+    this.setState({
+      data: {
+        ...data,
+        nodes: {
+          ...data.nodes,
+          [selectedTreeItem]: {
+            ...data.nodes[selectedTreeItem],
+            style,
+          }
+        }
+      }
+    })
+  }
+
   setSelectedTreeItem = (item: string) => {
     this.setState({selectedTreeItem: item})
+  }
+
+  selectFromClick = (item: string) => {
+    this.setState({selectedTreeItem: item, clickToSelect: false})
   }
 
   render() {
@@ -149,6 +189,14 @@ export default class App extends Component {
           <Header
           >
             <div>Instance Tree</div>
+            <div style={{flex: 1}} />
+            <Icon
+              name="qr-scanner"
+              color={this.state.clickToSelect ? 'blue' : '#a6a8aa'}
+              style={{cursor: 'pointer', padding: 4,}}
+              size={20}
+              onClick={() => this.setState({clickToSelect: !this.state.clickToSelect})}
+            />
           </Header>
           <Tree
             nodes={nodes}
@@ -159,10 +207,12 @@ export default class App extends Component {
             selected={selectedTreeItem}
             setSelected={this.setSelectedTreeItem}
           />
+          <Hairline />
           <ConfigurationViewer
             nodes={nodes}
             configuration={components[currentComponent].savedConfigurations[this.state.currentConfiguration]}
             selectedTreeItem={selectedTreeItem}
+            onChangeStyle={this.onChangeStyle}
             componentInstances={this.state.componentInstances[this.state.currentConfiguration]}
           />
         </div>
@@ -185,22 +235,43 @@ export default class App extends Component {
   }
 }
 
-const ConfigurationViewer = ({nodes, selectedTreeItem, componentInstances, configuration}) => {
-  const props = selectedTreeItem !== 'root' ?
-    nodes[selectedTreeItem] :
-    (configuration ? configuration.props : (componentInstances.root && componentInstances.root.props))
-  return <div>
-    <Header
-    >
-      <div>Props</div>
-    </Header>
-    <pre>
-      {JSON.stringify(props, null, 2)}
+const ConfigurationViewer = ({nodes, selectedTreeItem, componentInstances, configuration, onChangeStyle}) => {
+  if (selectedTreeItem === 'root') {
+    const props = componentInstances.root ? componentInstances.root.props : null
+    // ummmm how do I snoop on props n stuff?
+    return <div>
+      <Header
+      >
+        <div>Props</div>
+      </Header>
+      <pre>
+        {JSON.stringify(props, null, 2)}
       </pre>
+      <Header
+      >
+        <div>State</div>
+      </Header>
+      TODO
+    </div>
+  }
+  const node = nodes[selectedTreeItem]
+  return <div style={{height: 400, overflow: 'auto'}}>
     <Header
     >
-      <div>State</div>
+      <div>Style</div>
     </Header>
+    <StyleEditor
+      style={node.style}
+      onChange={onChangeStyle}
+    />
+    <Hairline />
+    <Header
+    >
+      <div>Imported style</div>
+    </Header>
+    <pre style={{overflow: 'auto', alignSelf: 'stretch'}}>
+      {JSON.stringify(node.importedStyle, null, 2)}
+    </pre>
   </div>
 }
 

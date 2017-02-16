@@ -5,7 +5,7 @@ import uuid from './uuid'
 
 import type {NodeT, /*NodeExtra, */NodeBase, ObjectId} from './types'
 
-const color2string = color => color && `rgba(${color.r * 255}, ${color.g * 255}, ${color.b * 255}, ${color.a})`
+const color2string = color => color && `rgba(${Math.round(color.r * 255)}, ${Math.round(color.g * 255)}, ${Math.round(color.b * 255)}, ${Math.round(color.a)})`
 
 const cframe = frame => frame && ({
   top: frame.top,
@@ -49,9 +49,8 @@ const nodeExtraFromLayer = (layer: any, components: any) => {
       return {
         type: 'Image',
         imageData: layer.imageData,
-        tintColor: layer.fillReplacesImage
-          ? color2string(ccolor(layer.styleGeneric.fill.colorGeneric))
-          : null,
+        fillReplacesImage: layer.fillReplacesImage,
+        tintColor: layer.styleGeneric.fill && color2string(ccolor(layer.styleGeneric.fill.colorGeneric)),
       }
     default:
       return {type: 'Group', children: []}
@@ -81,10 +80,14 @@ const fixedSVGFrame = (frame, svgString) => {
   return {top, left, width, height}
 }
 
-const cborder = border => border && `${border.thickness}px solid ${color2string(ccolor(border.colorGeneric))}`
+const cborder = border => border && border.isEnabled && border.colorGeneric && border.colorGeneric.alpha && `${border.thickness}px solid ${color2string(ccolor(border.colorGeneric))}`
 
 const styleExtraFromLayer = (layer: any) => {
   switch (layer.$type) {
+    case 'MSBitmapLayer':
+      return {
+        tintColor: layer.styleGeneric.fill && color2string(ccolor(layer.styleGeneric.fill.colorGeneric)),
+      }
     case 'MSShapeGroup':
       if (isRectangleGroup(layer)) {
         const child = layer.layers[0]
@@ -139,8 +142,9 @@ const styleFromLayer = (layer: any) => {
   }
 }
 
-const nodeBaseFromLayer = (layer: any, idsByName: any): NodeBase => ({
+const nodeBaseFromLayer = (layer: any, idsByName: any, parent: ObjectId): NodeBase => ({
     id: layer.objectID,
+    parent,
     name: layer.name,
     uniqueName: findUniqueName(layer.name, idsByName), // TODO fill in
     importedStyle: {
@@ -150,16 +154,17 @@ const nodeBaseFromLayer = (layer: any, idsByName: any): NodeBase => ({
     style: {},
 })
 
-const nodeFromLayer = (layer: any, idsByName: any, components: any): NodeT => {
+const nodeFromLayer = (layer: any, idsByName: any, components: any, parent: ObjectId): NodeT => {
   const node = typeof layer === 'string' ? {
     type: 'ImportError',
     id: layer,
+    parent,
     uniqueName: findUniqueName('errorImporting', idsByName),
     name: 'errorImporting',
     importedStyle: {},
     style: {},
   } : {
-    ...nodeBaseFromLayer(layer, idsByName),
+    ...nodeBaseFromLayer(layer, idsByName, parent),
     ...nodeExtraFromLayer(layer, components),
   }
   if (node.type === 'ComponentInstance') {
@@ -174,14 +179,28 @@ const calcChildSize = (children, byId) => {
   let h = 0
   children.forEach(id => {
     const child = byId[id]
-    w = Math.max(child.importedStyle.left + Math.max(child.importedStyle.width, child.childSize ? child.childSize.width : 0), w)
-    h = Math.max(child.importedStyle.top + Math.max(child.importedStyle.height, child.childSize ? child.childSize.height : 0), h)
+    w = Math.max(
+      child.importedStyle.left + (
+        child.importedStyle.width
+          ? child.importedStyle.width
+          : (child.childSize ? child.childSize.width : 0)
+      ),
+      w
+    )
+    h = Math.max(
+      child.importedStyle.top + (
+        child.importedStyle.height
+          ? child.importedStyle.height
+          : (child.childSize ? child.childSize.height : 0)
+      ),
+      h
+    )
   })
   return {width: w, height: h}
 }
 
-const processLayer = (layer, byId, idsByName, components): ObjectId => {
-  const node: NodeT = nodeFromLayer(layer, idsByName, components)
+const processLayer = (layer, byId, idsByName, components, parent: ObjectId): ObjectId => {
+  const node: NodeT = nodeFromLayer(layer, idsByName, components, parent)
   if (node.type === 'SymbolMaster') {
     node.id = node.symbolId
     components[node.id] = {
@@ -197,7 +216,7 @@ const processLayer = (layer, byId, idsByName, components): ObjectId => {
       if (!layer.layers) {
         debugger
       }
-      node.children = layer.layers.map(child => processLayer(child, byId, idsByName, components))
+      node.children = layer.layers.map(child => processLayer(child, byId, idsByName, components, node.id))
       node.childSize = calcChildSize(node.children, byId)
   }
   return node.id
@@ -226,11 +245,11 @@ function processDump({root, converteds}: any) {
   const idsByName = {}
   const components = {}
   for (let id in symbols) {
-    symbols[id] = processLayer(symbols[id], byId, idsByName, components)
+    symbols[id] = processLayer(symbols[id], byId, idsByName, components, null)
   }
   const artboard = converteds[0]
   const nodes = {}
-  const id = processLayer(artboard, byId, idsByName, components)
+  const id = processLayer(artboard, byId, idsByName, components, null)
   const res =  { root: id, symbols, byId, idsByName, components }
   window.RES = res
   return res

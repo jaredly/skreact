@@ -10,6 +10,7 @@ import {colors} from './styles'
 export default class ConfigurationPreview extends Component {
   static childContextTypes = {
     domNodes: React.PropTypes.any,
+    propsMap: React.PropTypes.any,
     componentInstances: React.PropTypes.any,
   }
 
@@ -19,7 +20,25 @@ export default class ConfigurationPreview extends Component {
   getChildContext() {
     return {
       domNodes: this.props.domNodes,
+      propsMap: this.props.propsMap,
       componentInstances: this.props.componentInstances,
+    }
+  }
+
+  clickToSelect = evt => {
+    evt.stopPropagation()
+    evt.preventDefault()
+    let target = evt.target
+    while (!target.getAttribute('data-key')) {
+      target = target.parentNode
+      if (target === document.body || !target) {
+        return
+      }
+    }
+    for (let id in this.props.domNodes) {
+      if (this.props.domNodes[id] === target) {
+        return this.props.selectFromClick(id)
+      }
     }
   }
 
@@ -35,12 +54,19 @@ export default class ConfigurationPreview extends Component {
           {config.name}
         </div>
       </div>
+      <div
+        className={css(styles.wrapper, this.props.current && styles.wrapperCurrent)}
+        onMouseDownCapture={this.props.clickToSelect
+          ? this.clickToSelect
+          : undefined}
+      >
       <Component style={{
         boxShadow: '0 1px 5px #000',
         position: 'relative', top: 0, left: 0,
       }} ref={inst => {
         this.props.componentInstances.root = inst
       }} />
+      </div>
     </div>
   }
 }
@@ -48,6 +74,14 @@ export default class ConfigurationPreview extends Component {
 const styles = StyleSheet.create({
   container: {
     paddingBottom: 10,
+  },
+
+  wrapper: {
+    alignSelf: 'flex-start',
+  },
+
+  wrapperCurrent: {
+    outline: '3px solid #3ecbff',
   },
 
   header: {
