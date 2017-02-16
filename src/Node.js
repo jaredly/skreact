@@ -68,7 +68,7 @@ const body = (node, symbols, style, myProps) => {
         id={node.id}
       />
     case 'Text':
-      return <span>{node.stringValue}</span>
+      return <span>{myProps.stringValue || node.stringValue}</span>
     case 'ShapeGroup':
       return <div dangerouslySetInnerHTML={{ __html: node.svgSource }} />
     case 'Image':

@@ -16,6 +16,7 @@ const initialComponent = (name, rootName) => {
   const Component = props => <Node name={rootName} {...props} />
   Component.displayName = name
   Component.rootName = rootName
+  Component.defaultProps = {}
   return Component
 }
 

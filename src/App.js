@@ -3,6 +3,8 @@
 import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
+import uuid from './utils/uuid'
+
 import Node from './Node'
 import Editor from './Editor'
 import Tree from './Tree'
@@ -114,6 +116,7 @@ export default class App extends Component {
   }
 
   renderConfigurations() {
+    if (!this.state.data) return
     const {Component, visibleConfigurations, savedConfigurations} = this.state.data.components[this.state.currentComponent]
     return <div className={css(styles.display)}>
       {visibleConfigurations.map(id => {
@@ -131,6 +134,8 @@ export default class App extends Component {
           componentInstances={this.state.componentInstances[id]}
           clickToSelect={selected && this.state.clickToSelect}
           selectFromClick={this.selectFromClick}
+          selectConfiguration={() => this.setState({currentConfiguration: id})}
+          removeConfiguration={() => this.hideConfiguration(id)}
         />
       })}
     </div>
@@ -173,6 +178,7 @@ export default class App extends Component {
   }
 
   toggleHidden = (id: string) => {
+    if (!this.state.data) return
     const node = this.state.data.nodes[id]
     const importedHidden = node.importedStyle.display === 'none'
     if (importedHidden) {
@@ -188,6 +194,106 @@ export default class App extends Component {
         return this.changeStyle(id, 'display', 'none')
       }
     }
+  }
+
+  createComponent = (id: string) => {
+    const {data} = this.state
+    if (!data) return
+    console.error('NOT IMPLEMENTED')
+  }
+
+  createNewConfiguration = () => {
+    const id = uuid()
+    const {data, currentComponent, currentConfiguration, componentInstances} = this.state
+    if (!data) return
+    const props = currentConfiguration === 'default'
+      ? data.components[currentComponent].Component.defaultProps
+      : data.components[currentComponent].savedConfigurations[currentConfiguration].props
+    const state = currentConfiguration === 'default'
+      ? (componentInstances[currentConfiguration].root) && componentInstances[currentConfiguration].root.state
+      : data.components[currentComponent].savedConfigurations[currentConfiguration].state
+    this.setState({
+      data: {
+        ...data,
+        components: {
+          ...data.components,
+          [currentComponent]: {
+            ...data.components[currentComponent],
+            savedConfigurations: {
+              ...data.components[currentComponent].savedConfigurations,
+              [id]: {
+                name: 'Untitled configuration',
+                props: {...props},
+                state: {...state},
+              },
+            },
+            visibleConfigurations: data.components[currentComponent].visibleConfigurations.concat([id]),
+          }
+        }
+      }
+    })
+  }
+
+  showConfiguration = (id: string) => {
+    const {currentComponent, data} = this.state
+    if (!data) return
+    const {components} = data
+    const {visibleConfigurations} = components[currentComponent]
+    this.setState({
+      data: {
+        ...data,
+        components: {
+          ...data.components,
+          [currentComponent]: {
+            ...data.components[currentComponent],
+            visibleConfigurations: visibleConfigurations.concat([id]),
+          }
+        }
+      }
+    })
+  }
+
+  hideConfiguration = (id: string) => {
+    const {currentComponent, data} = this.state
+    if (!data) return
+    const {components} = data
+    const {visibleConfigurations} = components[currentComponent]
+    this.setState({
+      data: {
+        ...data,
+        components: {
+          ...data.components,
+          [currentComponent]: {
+            ...data.components[currentComponent],
+            visibleConfigurations: visibleConfigurations.filter(cid => cid !== id),
+          }
+        }
+      }
+    })
+  }
+
+  renderMenu = (onClose: () => void) => {
+    if (!this.state.data) return
+    const {components} = this.state.data
+    const {currentComponent} = this.state
+    const {savedConfigurations, visibleConfigurations} = components[currentComponent]
+    const ids = Object.keys(savedConfigurations).filter(id => visibleConfigurations.indexOf(id) === -1)
+    const items = [{
+      title: 'Create new configuration',
+      action: () => this.createNewConfiguration(),
+    }]
+    if (visibleConfigurations.indexOf('default') === -1) {
+      items.push({
+        title: 'Default configuration',
+        action: () => this.showConfiguration('default'),
+      })
+    }
+    const extras = ids.map(id => ({
+      title: savedConfigurations[id].name,
+      action: () => this.showConfiguration(id),
+    }))
+    items.push(...extras)
+    return <Menu onClose={onClose} items={items} />
   }
 
   render() {
@@ -232,6 +338,7 @@ export default class App extends Component {
             setSelected={this.setSelectedTreeItem}
             toggleHidden={this.toggleHidden}
             navigateToComponent={this.switchCurrentComponent}
+            createComponent={this.createComponent}
           />
           <Hairline />
           <ConfigurationViewer
@@ -246,6 +353,11 @@ export default class App extends Component {
           <Header
           >
             <div>Application Preview</div>
+            <div style={{flex: 1}} />
+            <PopupMenu
+              title="Add a configuration"
+              menu={this.renderMenu}  
+            />
           </Header>
           {configurations}
         </div>
@@ -260,6 +372,128 @@ export default class App extends Component {
     </div>
   }
 }
+
+const isAncestor = (ancestor, node: any) => {
+  while (node && node !== document.body) {
+    if (node === ancestor) return true
+    node = node.parentNode
+  }
+  return false
+}
+
+const PopupMenu = (() => {
+  const styles = StyleSheet.create({
+    container: {
+      position: 'relative',
+      fontWeight: 100,
+      fontSize: 12,
+    },
+    button: {
+      padding: '5px 10px',        
+      cursor: 'pointer',
+      color: colors.highlight,
+      flexDirection: 'row',
+      alignItems: 'center',
+      lineHeight: '14px',
+    },
+    icon: {
+      paddingLeft: 5,
+      lineHeight: '16px',
+      fontSize: 11,
+    },
+    menu: {
+      position: 'absolute',
+      zIndex: 1000,
+      top: '100%',
+      right: 0,
+    },
+  })
+
+  return class PopupMenu extends Component {
+    state: {open: boolean}
+    container: *
+    constructor() {
+      super()
+      this.state = {open: false}
+    }
+
+    componentDidUpdate() {
+      if (this.state.open) {
+        window.addEventListener('mousedown', this.hideMenu, true)
+      } else {
+        window.removeEventListener('mousedown', this.hideMenu, true)
+      }
+    }
+
+    componentWillUnmount() {
+      window.removeEventListener('mousedown', this.hideMenu, true)
+    }
+
+    hideMenu = (evt: MouseEvent) => {
+      if (!isAncestor(this.container, evt.target)) {
+        this.setState({open: false})
+      }
+    }
+
+    render() {
+      return <div ref={node => this.container = node} className={css(styles.container)}>
+        <div
+          onClick={() => this.setState({open: !this.state.open})}
+          className={css(styles.button)}
+        >
+          {this.props.title}
+          <Icon
+            name="ios-arrow-down"
+            className={css(styles.icon)}
+          />
+        </div>
+        {this.state.open && <div className={css(styles.menu)}>{this.props.menu(() => this.setState({open: false}))}</div>}
+      </div>
+    }
+  }
+})()
+
+const Menu = (() => {
+  const Menu = ({items, onClose}) => (
+    <div className={css(styles.container)}>
+      {items.map((item, i) => (
+        <div key={i}
+          onClick={() => (onClose(), item.action())}
+          className={css(
+            styles.item,
+            i === 0 && styles.firstItem,
+            i === items.length - 1 && styles.lastItem
+          )}
+        >
+          {item.title}
+        </div>
+      ))}
+    </div>
+  )
+
+  const styles = StyleSheet.create({
+    container: {
+      backgroundColor: 'white',
+      boxShadow: '0 2px 7px rgba(0, 0, 0, 0.6)',
+      padding: '5px 0',
+      borderRadius: 3,
+      fontWeight: 100,
+      fontSize: 12,
+      width: 200,
+    },
+    item: {
+      padding: '10px 15px',
+      cursor: 'pointer',
+      whiteSpace: 'nowrap',
+
+      ':hover': {
+        backgroundColor: colors.highlight,
+        color: 'white',
+      }
+    },
+  })
+  return Menu
+})()
 
 const ConfigurationViewer = ({nodes, selectedTreeItem, componentInstances, configuration, onChangeStyle}) => {
   if (selectedTreeItem === 'root') {

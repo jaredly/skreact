@@ -127,6 +127,7 @@ export default class Tree extends Component {
       menu: [
         {
           text: 'Create component',
+          action: () => this.props.createComponent(id),
         },
       ]
     })

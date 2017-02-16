@@ -48,6 +48,7 @@ export default class ConfigurationPreview extends Component {
       <div className={css(styles.header)}>
         <Icon
           className={css(styles.icon)}
+          onClick={() => this.props.removeConfiguration()}
           name="ios-close-empty"
         />  
         <div className={css(styles.name)}>
@@ -56,9 +57,13 @@ export default class ConfigurationPreview extends Component {
       </div>
       <div
         className={css(styles.wrapper, this.props.current && styles.wrapperCurrent)}
-        onMouseDownCapture={this.props.clickToSelect
-          ? this.clickToSelect
-          : undefined}
+        onMouseDownCapture={
+          this.props.current
+          ? (this.props.clickToSelect
+            ? this.clickToSelect
+            : undefined)
+          : (evt => (evt.preventDefault(), evt.stopPropagation(), this.props.selectConfiguration()))
+        }
       >
       <Component style={{
         boxShadow: '0 1px 5px #000',
