@@ -44,7 +44,7 @@ export default class KeyValueEditor extends Component {
               </div>
               :
               <div className={css(styles.value)}>
-                {JSON.stringify(data[key])}
+                {data[key]}
               </div>
               <div style={{flex: 1}} />
               <Icon

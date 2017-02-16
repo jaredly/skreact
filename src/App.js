@@ -16,6 +16,7 @@ import StyleEditor from './StyleEditor'
 import Icon from './Icon'
 import Menu from './Menu'
 import PopupMenu from './PopupMenu'
+import ConfigurationEditor from './ConfigurationEditor'
 
 import evalComponent from './utils/evalComponent'
 import {colors} from './styles'
@@ -38,34 +39,74 @@ const throttle = <T>(fn: (args: T) => void, time) => {
   }
 }
 
-export default class App extends Component {
+export default class AppWrapper extends Component {
+  state: {
+    loading: boolean,
+    data: ?SkreactFile,
+  }
+  constructor() {
+    super()
+    this.state = {data: null, loading: true}
+  }
+
+  componentDidMount() {
+    loadSavedState()
+      // .then(data => data || initialImport()) // TODO remove
+      .then(data => this.setState({loading: false, data}))
+  }
+
+  doImport = () => {
+    this.setState({data: initialImport()})
+  }
+
+  render() {
+    if (this.state.loading) {
+      return <div>Loading...</div>
+    }
+    if (!this.state.data) {
+      return <div>
+        To get started, import something
+        <button
+          onClick={this.doImport}
+        >
+          Import
+        </button>
+        Note: currently this only imports data that was pre-exported from sketch.
+        In future we'll grab it from the currently opened sketch file.
+      </div>
+    }
+    return <App initialData={this.state.data} />
+  }
+}
+
+class App extends Component {
   static childContextTypes = {
     data: React.PropTypes.any,    
   }
 
   state: {
-    loading: boolean,
-    data: ?SkreactFile,
+    data: SkreactFile,
     currentComponent: string,
     componentInstances: any,
     domNodes: any,
     propsMap: any,
     selectedTreeItem: string,
     currentConfiguration: string,
+    configurationTicks: {[id: string]: number},
     clickToSelect: boolean,
     savedAt: number,
   }
 
-  constructor() {
+  constructor(props) {
     super()
     this.state = {
-      loading: true,
-      data: null,
+      data: props.initialData,
       savedAt: Date.now(),
       currentComponent: 'root',
       // TODO clear these out whenever changing current component
       domNodes: {},
       propsMap: {},
+      configurationTicks: {},
       componentInstances: {},
       selectedTreeItem: 'root',
       currentConfiguration: 'default',
@@ -75,19 +116,15 @@ export default class App extends Component {
 
   componentDidMount() {
     window.app = this
-    loadSavedState()
-    .then(data => (console.log('initial', data), data))
-    // .then(data => data || initialImport()) // TODO remove
-    .then(data => this.setState({loading: false, data, savedAt: Date.now()}))
   }
 
   recheck = () => {
-    // this.setState({data: processDump(window.DATA)})
+    // TODO maybe do this sometime?
   }
 
   getChildContext() {
     return {
-      data: this.state.data, // processDump(window.DATA),
+      data: this.state.data,
     }
   }
 
@@ -111,6 +148,7 @@ export default class App extends Component {
       currentComponent,
       selectedTreeItem: 'root',
       currentConfiguration: 'default', // TODO select one of the active ones
+      configurationTicks: {},
       domNodes: {},
       propsMap: {},
       componentInstances: {},
@@ -119,13 +157,11 @@ export default class App extends Component {
 
   commitComponent = (source: string) => {
     const id = this.state.currentComponent
-    if (!this.state.data) return
     const {data} = this.state
     const Component = evalComponent(data.components[id].name, source, Node)
     if (!Component) {
       return
     }
-    if (!data) return
     const components = {
       ...data.components,
       [id]: { ...data.components[id], Component, source },
@@ -134,25 +170,7 @@ export default class App extends Component {
     this.updateData({...this.state.data, components})
   }
 
-  doImport = () => {
-    this.setState({data: initialImport()})
-  }
-
-  renderEmpty() {
-    return <div>
-      To get started, import something
-      <button
-        onClick={this.doImport}
-      >
-        Import
-      </button>
-      Note: currently this only imports data that was pre-exported from sketch.
-      In future we'll grab it from the currently opened sketch file.
-    </div>
-  }
-
   renderConfigurations() {
-    if (!this.state.data) return
     const {Component, visibleConfigurations, savedConfigurations} = this.state.data.components[this.state.currentComponent]
     return <div className={css(styles.display)}>
       {visibleConfigurations.map(id => {
@@ -160,8 +178,9 @@ export default class App extends Component {
         if (!this.state.propsMap[id]) this.state.propsMap[id] = {}
         if (!this.state.componentInstances[id]) this.state.componentInstances[id] = {}
         const selected = this.state.currentConfiguration === id
+        const tick = this.state.configurationTicks[id] || 0
         return <ConfigurationPreview
-          key={id}
+          key={id + tick}
           Component={Component}
           current={selected}
           config={id === 'default' ? undefined : savedConfigurations[id]}
@@ -180,7 +199,6 @@ export default class App extends Component {
 
   changeStyle = (id: string, attr: ?string, value: any, prevAttr?: string) => {
     const {data} = this.state
-    if (!data) return
     const style = {...data.nodes[id].style}
     if (prevAttr && prevAttr !== attr) {
       delete style[prevAttr]
@@ -204,6 +222,33 @@ export default class App extends Component {
     this.changeStyle(this.state.selectedTreeItem, attr, value, prevAttr)
   }
 
+  onChangeConfiguration = (configuration: any) => {
+    const {data: {components}, currentComponent, currentConfiguration} = this.state
+    if (currentConfiguration === 'default') {
+      throw new Error("can't modify the default configuration")
+    }
+    const {savedConfigurations} = components[currentComponent]
+    this.updateData({
+      ...this.state.data,
+      components: {
+        ...components,
+        [currentComponent]: {
+          ...components[currentComponent],
+          savedConfigurations: {
+            ...savedConfigurations,
+            [currentConfiguration]: configuration,
+          },
+        },
+      },
+    })
+    this.setState({
+      configurationTicks: {
+        ...this.state.configurationTicks,
+        [currentConfiguration]: (this.state.configurationTicks[currentConfiguration] || 0) + 1,
+      }
+    })
+  }
+
   setSelectedTreeItem = (item: string) => {
     this.setState({selectedTreeItem: item})
   }
@@ -213,7 +258,6 @@ export default class App extends Component {
   }
 
   toggleHidden = (id: string) => {
-    if (!this.state.data) return
     const node = this.state.data.nodes[id]
     const importedHidden = node.importedStyle.display === 'none'
     if (importedHidden) {
@@ -233,14 +277,12 @@ export default class App extends Component {
 
   createComponent = (id: string) => {
     const {data} = this.state
-    if (!data) return
     console.error('NOT IMPLEMENTED')
   }
 
   createNewConfiguration = () => {
     const id = uuid()
     const {data, currentComponent, currentConfiguration, componentInstances} = this.state
-    if (!data) return
     const props = currentConfiguration === 'default'
       ? data.components[currentComponent].Component.defaultProps
       : data.components[currentComponent].savedConfigurations[currentConfiguration].props
@@ -269,7 +311,6 @@ export default class App extends Component {
 
   showConfiguration = (id: string) => {
     const {currentComponent, data} = this.state
-    if (!data) return
     const {components} = data
     const {visibleConfigurations} = components[currentComponent]
     this.updateData({
@@ -286,7 +327,6 @@ export default class App extends Component {
 
   hideConfiguration = (id: string) => {
     const {currentComponent, data} = this.state
-    if (!data) return
     const {components} = data
     const {visibleConfigurations} = components[currentComponent]
     this.updateData({
@@ -303,7 +343,6 @@ export default class App extends Component {
 
   deleteConfiguration = (id: string) => {
     const {currentComponent, data} = this.state
-    if (!data) return
     const {components} = data
     const {visibleConfigurations} = components[currentComponent]
     const configurations = {...data.components[currentComponent].savedConfigurations}
@@ -322,7 +361,6 @@ export default class App extends Component {
   }
 
   renderMenu = (onClose: () => void) => {
-    if (!this.state.data) return
     const {components} = this.state.data
     const {currentComponent} = this.state
     const {savedConfigurations, visibleConfigurations} = components[currentComponent]
@@ -346,10 +384,6 @@ export default class App extends Component {
   }
 
   render() {
-    if (this.state.loading) return <div>Loading</div>
-    if (!this.state.data) {
-      return this.renderEmpty()
-    }
     const {nodes, idsByName, components} = this.state.data
     const {currentComponent, selectedTreeItem} = this.state
     const {Component, source} = components[currentComponent]
@@ -390,12 +424,14 @@ export default class App extends Component {
             createComponent={this.createComponent}
           />
           <Hairline />
-          <ConfigurationViewer
+          <ConfigurationEditor
             nodes={nodes}
+            Component={Component}
             configuration={components[currentComponent].savedConfigurations[this.state.currentConfiguration]}
             selectedTreeItem={selectedTreeItem}
             onChangeStyle={this.onChangeStyle}
             componentInstances={this.state.componentInstances[this.state.currentConfiguration]}
+            onChangeConfiguration={this.onChangeConfiguration}
           />
         </div>
         <div className={css(styles.preview)}>
@@ -431,46 +467,6 @@ export default class App extends Component {
       </div>
     </div>
   }
-}
-
-const ConfigurationViewer = ({nodes, selectedTreeItem, componentInstances, configuration, onChangeStyle}) => {
-  if (selectedTreeItem === 'root') {
-    const props = componentInstances.root ? componentInstances.root.props : null
-    // ummmm how do I snoop on props n stuff?
-    return <div>
-      <Header
-      >
-        <div>Props</div>
-      </Header>
-      <pre>
-        {JSON.stringify(props, null, 2)}
-      </pre>
-      <Header
-      >
-        <div>State</div>
-      </Header>
-      TODO
-    </div>
-  }
-  const node = nodes[selectedTreeItem]
-  return <div style={{height: 400, overflow: 'auto'}}>
-    <Header
-    >
-      <div>Style</div>
-    </Header>
-    <StyleEditor
-      style={node.style}
-      onChange={onChangeStyle}
-    />
-    <Hairline />
-    <Header
-    >
-      <div>Imported style</div>
-    </Header>
-    <pre style={{overflow: 'auto', alignSelf: 'stretch'}}>
-      {JSON.stringify(node.importedStyle, null, 2)}
-    </pre>
-  </div>
 }
 
 const styles = StyleSheet.create({

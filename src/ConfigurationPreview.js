@@ -65,24 +65,29 @@ export default class ConfigurationPreview extends Component {
   }
 
   render() {
-    const {Component, config={name: 'Default configuration', props: null, state: null}} = this.props
+    const {Component, config={name: 'Default configuration', props: {}, state: {}}} = this.props
     return <div className={css(styles.container)}>
-      <PopupMenu
-        className={css(styles.menuContainer)}
-        title={
-          <div className={css(styles.header)}>
-            <Icon
-              className={css(styles.icon)}
-              name="ios-close-empty"
-            />  
-            <div className={css(styles.name)}>
-              {config.name}
+      <div className={css(styles.top)}>
+        <PopupMenu
+          className={css(styles.menuContainer)}
+          title={
+            <div className={css(styles.header)}>
+              <Icon
+                className={css(styles.icon)}
+                name="ios-close-empty"
+              />  
             </div>
-          </div>
-        }
-        menu={this.renderMenu}
-        align="left"
-      />
+          }
+          menu={this.renderMenu}
+          align="left"
+        />
+        <div
+          className={css(styles.name)}
+          onClick={() => this.props.selectConfiguration()}
+        >
+          {config.name}
+        </div>
+      </div>
       <div
         className={css(styles.wrapper, this.props.current && styles.wrapperCurrent)}
         onMouseDownCapture={
@@ -93,12 +98,17 @@ export default class ConfigurationPreview extends Component {
           : (evt => (evt.preventDefault(), evt.stopPropagation(), this.props.selectConfiguration()))
         }
       >
-      <Component style={{
-        boxShadow: '0 1px 5px #000',
-        position: 'relative', top: 0, left: 0,
-      }} ref={inst => {
-        this.props.componentInstances.root = inst
-      }} />
+      <Component
+        {...config.props}
+        style={{
+          boxShadow: '0 1px 5px #000',
+          position: 'relative', top: 0, left: 0,
+          ...config.props.style,
+        }}
+        ref={inst => {
+          this.props.componentInstances.root = inst
+        }}
+      />
       </div>
     </div>
   }
@@ -107,6 +117,13 @@ export default class ConfigurationPreview extends Component {
 const styles = StyleSheet.create({
   container: {
     marginBottom: 10,
+  },
+
+  top: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    lineHeight: '16px',
+    color: '#aaa',
   },
 
   menuContainer: {
@@ -121,14 +138,8 @@ const styles = StyleSheet.create({
     outline: '3px solid #3ecbff',
   },
 
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    lineHeight: '16px',
-    color: '#aaa',
-  },
-
   name: {
+    cursor: 'pointer',
     color: '#ccc',
     padding: 5,
     fontSize: '90%',
