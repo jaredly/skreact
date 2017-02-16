@@ -5,7 +5,10 @@ import uuid from './uuid'
 
 import type {NodeT, /*NodeExtra, */NodeBase, ObjectId} from './types'
 
-const color2string = color => color && `rgba(${Math.round(color.r * 255)}, ${Math.round(color.g * 255)}, ${Math.round(color.b * 255)}, ${Math.round(color.a)})`
+const color2string = color => color && (
+  color.a === 1
+  ? `rgba(${Math.round(color.r * 255)}, ${Math.round(color.g * 255)}, ${Math.round(color.b * 255)}, ${color.a})`
+  : `rgb(${Math.round(color.r * 255)})`)
 
 const cframe = frame => frame && ({
   top: frame.top,

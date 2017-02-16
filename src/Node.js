@@ -38,22 +38,28 @@ const tintImage = (id, imgSrc, tintColor) => {
 
 class TintedImage extends Component {
   state: {tinted: ?string}
+  unmounted: boolean
   constructor({id, src, tintColor}) {
     super()
     this.state = {tinted: null}
     if (tintColorCache[id] && tintColorCache[id][tintColor]) {
       this.state.tinted = tintColorCache[id][tintColor]
     } else {
-      tintImage(id, src, tintColor).then(src => this.setState({tinted: src}))
+      tintImage(id, src, tintColor).then(src => !this.unmounted && this.setState({tinted: src}))
     }
+    this.unmounted = false
   }
 
   componentWillReceiveProps({id, src, tintColor}) {
     if (tintColor !== this.props.tintColor) {
-      tintImage(id, src, tintColor).then(src => this.setState({tinted: src}))
+      tintImage(id, src, tintColor)
+        .then(src => !this.unmounted && this.setState({tinted: src}))
     }
   }
   
+  componentWillUnmount() {
+    this.unmounted = false
+  }
 
   render() {
     return <img src={this.state.tinted || this.props.src} style={this.props.style} />

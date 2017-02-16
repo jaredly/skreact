@@ -22,18 +22,29 @@ const initialComponent = (name, rootName) => {
 
 const saveComponents = components => {
   const texts = {}
-  for (let name in components) {
-    texts[name] = components[name].text
+  for (let id in components) {
+    texts[id] = components[id].source
   }
   localStorage[COMPONENTS_KEY] = JSON.stringify(texts)
 }
 
 const inflateComponents = components => {
   const res = {}
-  for (let name in components) {
-    res[name] = {
-      ...components[name],
-      Component: evalComponent(name, components[name].source, Node),
+  for (let id in components) {
+    res[id] = {
+      ...components[id],
+      Component: evalComponent(components[id].name, components[id].source, Node),
+    }
+  }
+  return res
+}
+
+const deflateCompnents = components => {
+  const res = {}
+  for (let id in components) {
+    res[id] = {
+      ...components[id],
+      Component: null,
     }
   }
   return res
@@ -49,6 +60,13 @@ export const loadSavedState = () => {
         }
       }
     })
+}
+
+export const saveState = (data: SkreactFile) => {
+  return localforage.setItem(COMPONENTS_KEY, {
+    ...data,
+    components: deflateCompnents(data.components)
+  })
 }
 
 const pascalify = name => name

@@ -50,6 +50,11 @@ export type NodeT = ({
   type: 'Rectangle',
   svgSource: string,
 } & NodeBase) | ({
+  type: 'RectangleGroup',
+  children: ObjectId[],
+  replacedGroupId: ObjectId,
+  styleFromGroup: any,
+} & NodeBase) | ({
   type: 'ImportError',
 } & NodeBase)
 

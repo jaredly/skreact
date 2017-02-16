@@ -19,9 +19,24 @@ import PopupMenu from './PopupMenu'
 
 import evalComponent from './utils/evalComponent'
 import {colors} from './styles'
-import {initialImport, loadSavedState} from './utils/storage'
+import {initialImport, loadSavedState, saveState} from './utils/storage'
 
 import type {SkreactFile} from './utils/types'
+
+const throttle = <T>(fn: (args: T) => void, time) => {
+  let wait = null
+  let wargs = null
+  return (args: T) => {
+    wargs = args
+    if (!wait) {
+      wait = setTimeout(() => {
+        wait = null
+        if (!wargs) return
+        fn(wargs)
+      }, time)
+    }
+  }
+}
 
 export default class App extends Component {
   static childContextTypes = {
@@ -38,6 +53,7 @@ export default class App extends Component {
     selectedTreeItem: string,
     currentConfiguration: string,
     clickToSelect: boolean,
+    savedAt: number,
   }
 
   constructor() {
@@ -45,6 +61,7 @@ export default class App extends Component {
     this.state = {
       loading: true,
       data: null,
+      savedAt: Date.now(),
       currentComponent: 'root',
       // TODO clear these out whenever changing current component
       domNodes: {},
@@ -57,9 +74,11 @@ export default class App extends Component {
   }
 
   componentDidMount() {
+    window.app = this
     loadSavedState()
-    .then(data => data || initialImport()) // TODO remove
-    .then(data => this.setState({loading: false, data}))
+    .then(data => (console.log('initial', data), data))
+    // .then(data => data || initialImport()) // TODO remove
+    .then(data => this.setState({loading: false, data, savedAt: Date.now()}))
   }
 
   recheck = () => {
@@ -70,6 +89,21 @@ export default class App extends Component {
     return {
       data: this.state.data, // processDump(window.DATA),
     }
+  }
+
+  saveState: * = throttle((data: SkreactFile) => {
+    console.log('saving')
+    saveState(data).then(saved => {
+      this.setState({savedAt: Date.now()})
+    }, err => {
+      console.error(err)
+      console.error('failed to saive')
+    })
+  }, 2000)
+
+  updateData(data: SkreactFile) {
+    this.setState({data})
+    this.saveState(data)
   }
 
   switchCurrentComponent = (currentComponent: string) => {
@@ -83,21 +117,21 @@ export default class App extends Component {
     })
   }
 
-  commitComponent = (text: string) => {
+  commitComponent = (source: string) => {
     const id = this.state.currentComponent
     if (!this.state.data) return
     const {data} = this.state
-    const Component = evalComponent(data.components[id].name, text, Node)
+    const Component = evalComponent(data.components[id].name, source, Node)
     if (!Component) {
       return
     }
     if (!data) return
     const components = {
       ...data.components,
-      [id]: { ...data.components[id], Component, text },
+      [id]: { ...data.components[id], Component, source },
     }
     // saveComponents(components)
-    this.setState({data: {...this.state.data, components}})
+    this.updateData({...this.state.data, components})
   }
 
   doImport = () => {
@@ -154,15 +188,13 @@ export default class App extends Component {
     if (attr) {
       style[attr] = value
     }
-    this.setState({
-      data: {
-        ...data,
-        nodes: {
-          ...data.nodes,
-          [id]: {
-            ...data.nodes[id],
-            style,
-          }
+    this.updateData({
+      ...data,
+      nodes: {
+        ...data.nodes,
+        [id]: {
+          ...data.nodes[id],
+          style,
         }
       }
     })
@@ -215,23 +247,21 @@ export default class App extends Component {
     const state = currentConfiguration === 'default'
       ? (componentInstances[currentConfiguration].root) && componentInstances[currentConfiguration].root.state
       : data.components[currentComponent].savedConfigurations[currentConfiguration].state
-    this.setState({
-      data: {
-        ...data,
-        components: {
-          ...data.components,
-          [currentComponent]: {
-            ...data.components[currentComponent],
-            savedConfigurations: {
-              ...data.components[currentComponent].savedConfigurations,
-              [id]: {
-                name: 'Untitled configuration',
-                props: {...props},
-                state: {...state},
-              },
+    this.updateData({
+      ...data,
+      components: {
+        ...data.components,
+        [currentComponent]: {
+          ...data.components[currentComponent],
+          savedConfigurations: {
+            ...data.components[currentComponent].savedConfigurations,
+            [id]: {
+              name: 'Untitled configuration',
+              props: {...props},
+              state: {...state},
             },
-            visibleConfigurations: data.components[currentComponent].visibleConfigurations.concat([id]),
-          }
+          },
+          visibleConfigurations: data.components[currentComponent].visibleConfigurations.concat([id]),
         }
       }
     })
@@ -242,15 +272,13 @@ export default class App extends Component {
     if (!data) return
     const {components} = data
     const {visibleConfigurations} = components[currentComponent]
-    this.setState({
-      data: {
-        ...data,
-        components: {
-          ...data.components,
-          [currentComponent]: {
-            ...data.components[currentComponent],
-            visibleConfigurations: visibleConfigurations.concat([id]),
-          }
+    this.updateData({
+      ...data,
+      components: {
+        ...data.components,
+        [currentComponent]: {
+          ...data.components[currentComponent],
+          visibleConfigurations: visibleConfigurations.concat([id]),
         }
       }
     })
@@ -261,15 +289,13 @@ export default class App extends Component {
     if (!data) return
     const {components} = data
     const {visibleConfigurations} = components[currentComponent]
-    this.setState({
-      data: {
-        ...data,
-        components: {
-          ...data.components,
-          [currentComponent]: {
-            ...data.components[currentComponent],
-            visibleConfigurations: visibleConfigurations.filter(cid => cid !== id),
-          }
+    this.updateData({
+      ...data,
+      components: {
+        ...data.components,
+        [currentComponent]: {
+          ...data.components[currentComponent],
+          visibleConfigurations: visibleConfigurations.filter(cid => cid !== id),
         }
       }
     })
@@ -282,16 +308,14 @@ export default class App extends Component {
     const {visibleConfigurations} = components[currentComponent]
     const configurations = {...data.components[currentComponent].savedConfigurations}
     delete configurations[id]
-    this.setState({
-      data: {
-        ...data,
-        components: {
-          ...data.components,
-          [currentComponent]: {
-            ...data.components[currentComponent],
-            savedConfigurations: configurations,
-            visibleConfigurations: visibleConfigurations.filter(cid => cid !== id),
-          }
+    this.updateData({
+      ...data,
+      components: {
+        ...data.components,
+        [currentComponent]: {
+          ...data.components[currentComponent],
+          savedConfigurations: configurations,
+          visibleConfigurations: visibleConfigurations.filter(cid => cid !== id),
         }
       }
     })
