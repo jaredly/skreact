@@ -14,6 +14,8 @@ import ComponentList from './ComponentList'
 import ConfigurationPreview from './ConfigurationPreview'
 import StyleEditor from './StyleEditor'
 import Icon from './Icon'
+import Menu from './Menu'
+import PopupMenu from './PopupMenu'
 
 import evalComponent from './utils/evalComponent'
 import {colors} from './styles'
@@ -355,7 +357,18 @@ export default class App extends Component {
             <div>Application Preview</div>
             <div style={{flex: 1}} />
             <PopupMenu
-              title="Add a configuration"
+              align="right"
+              title={
+                <div style={{flexDirection: 'row', alignItems: 'center', 
+                  padding: '5px 10px',
+                }}>
+                  Add a configuration
+                  <Icon
+                    name="ios-arrow-down"
+                    className={css(styles.icon)}
+                  />
+                </div>
+              }
               menu={this.renderMenu}  
             />
           </Header>
@@ -372,128 +385,6 @@ export default class App extends Component {
     </div>
   }
 }
-
-const isAncestor = (ancestor, node: any) => {
-  while (node && node !== document.body) {
-    if (node === ancestor) return true
-    node = node.parentNode
-  }
-  return false
-}
-
-const PopupMenu = (() => {
-  const styles = StyleSheet.create({
-    container: {
-      position: 'relative',
-      fontWeight: 100,
-      fontSize: 12,
-    },
-    button: {
-      padding: '5px 10px',        
-      cursor: 'pointer',
-      color: colors.highlight,
-      flexDirection: 'row',
-      alignItems: 'center',
-      lineHeight: '14px',
-    },
-    icon: {
-      paddingLeft: 5,
-      lineHeight: '16px',
-      fontSize: 11,
-    },
-    menu: {
-      position: 'absolute',
-      zIndex: 1000,
-      top: '100%',
-      right: 0,
-    },
-  })
-
-  return class PopupMenu extends Component {
-    state: {open: boolean}
-    container: *
-    constructor() {
-      super()
-      this.state = {open: false}
-    }
-
-    componentDidUpdate() {
-      if (this.state.open) {
-        window.addEventListener('mousedown', this.hideMenu, true)
-      } else {
-        window.removeEventListener('mousedown', this.hideMenu, true)
-      }
-    }
-
-    componentWillUnmount() {
-      window.removeEventListener('mousedown', this.hideMenu, true)
-    }
-
-    hideMenu = (evt: MouseEvent) => {
-      if (!isAncestor(this.container, evt.target)) {
-        this.setState({open: false})
-      }
-    }
-
-    render() {
-      return <div ref={node => this.container = node} className={css(styles.container)}>
-        <div
-          onClick={() => this.setState({open: !this.state.open})}
-          className={css(styles.button)}
-        >
-          {this.props.title}
-          <Icon
-            name="ios-arrow-down"
-            className={css(styles.icon)}
-          />
-        </div>
-        {this.state.open && <div className={css(styles.menu)}>{this.props.menu(() => this.setState({open: false}))}</div>}
-      </div>
-    }
-  }
-})()
-
-const Menu = (() => {
-  const Menu = ({items, onClose}) => (
-    <div className={css(styles.container)}>
-      {items.map((item, i) => (
-        <div key={i}
-          onClick={() => (onClose(), item.action())}
-          className={css(
-            styles.item,
-            i === 0 && styles.firstItem,
-            i === items.length - 1 && styles.lastItem
-          )}
-        >
-          {item.title}
-        </div>
-      ))}
-    </div>
-  )
-
-  const styles = StyleSheet.create({
-    container: {
-      backgroundColor: 'white',
-      boxShadow: '0 2px 7px rgba(0, 0, 0, 0.6)',
-      padding: '5px 0',
-      borderRadius: 3,
-      fontWeight: 100,
-      fontSize: 12,
-      width: 200,
-    },
-    item: {
-      padding: '10px 15px',
-      cursor: 'pointer',
-      whiteSpace: 'nowrap',
-
-      ':hover': {
-        backgroundColor: colors.highlight,
-        color: 'white',
-      }
-    },
-  })
-  return Menu
-})()
 
 const ConfigurationViewer = ({nodes, selectedTreeItem, componentInstances, configuration, onChangeStyle}) => {
   if (selectedTreeItem === 'root') {
@@ -562,6 +453,12 @@ const styles = StyleSheet.create({
   main: {
     flexDirection: 'row',
     flex: 1,
+  },
+
+  icon: {
+    paddingLeft: 5,
+    lineHeight: '16px',
+    fontSize: 11,
   },
 
   tree: {

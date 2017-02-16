@@ -5,6 +5,9 @@ import Header from './Header'
 import Hairline from './Hairline'
 import Icon from './Icon'
 
+import PopupMenu from './PopupMenu'
+import Menu from './Menu'
+
 import {colors} from './styles'
 
 export default class ConfigurationPreview extends Component {
@@ -42,19 +45,43 @@ export default class ConfigurationPreview extends Component {
     }
   }
 
+  renderMenu = onClose => {
+    const items = []
+    items.push({
+      title: 'Remove configuration from canvas',
+      action: this.props.removeConfiguration,
+    })
+    if (this.props.config) {
+      items.push({
+        title: 'Delete configuration',
+        action: this.props.deleteConfiguration,
+      })
+    }
+    return <Menu
+      onClose={onClose}
+      items={items}
+    />
+  }
+
   render() {
-    const {Component, config={name: 'Default', props: null, state: null}} = this.props
-    return <div style={styles.container}>
-      <div className={css(styles.header)}>
-        <Icon
-          className={css(styles.icon)}
-          onClick={() => this.props.removeConfiguration()}
-          name="ios-close-empty"
-        />  
-        <div className={css(styles.name)}>
-          {config.name}
-        </div>
-      </div>
+    const {Component, config={name: 'Default configuration', props: null, state: null}} = this.props
+    return <div className={css(styles.container)}>
+      <PopupMenu
+        className={css(styles.menuContainer)}
+        title={
+          <div className={css(styles.header)}>
+            <Icon
+              className={css(styles.icon)}
+              name="ios-close-empty"
+            />  
+            <div className={css(styles.name)}>
+              {config.name}
+            </div>
+          </div>
+        }
+        menu={this.renderMenu}
+        align="left"
+      />
       <div
         className={css(styles.wrapper, this.props.current && styles.wrapperCurrent)}
         onMouseDownCapture={
@@ -78,7 +105,11 @@ export default class ConfigurationPreview extends Component {
 
 const styles = StyleSheet.create({
   container: {
-    paddingBottom: 10,
+    marginBottom: 10,
+  },
+
+  menuContainer: {
+    alignSelf: 'flex-start',
   },
 
   wrapper: {
@@ -93,10 +124,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     lineHeight: '16px',
+    color: '#aaa',
   },
 
   name: {
-    color: 'white',
+    color: '#ccc',
     padding: 5,
     fontSize: '90%',
   },
