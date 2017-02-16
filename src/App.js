@@ -39,47 +39,7 @@ const throttle = <T>(fn: (args: T) => void, time) => {
   }
 }
 
-export default class AppWrapper extends Component {
-  state: {
-    loading: boolean,
-    data: ?SkreactFile,
-  }
-  constructor() {
-    super()
-    this.state = {data: null, loading: true}
-  }
-
-  componentDidMount() {
-    loadSavedState()
-      // .then(data => data || initialImport()) // TODO remove
-      .then(data => this.setState({loading: false, data}))
-  }
-
-  doImport = () => {
-    this.setState({data: initialImport()})
-  }
-
-  render() {
-    if (this.state.loading) {
-      return <div>Loading...</div>
-    }
-    if (!this.state.data) {
-      return <div>
-        To get started, import something
-        <button
-          onClick={this.doImport}
-        >
-          Import
-        </button>
-        Note: currently this only imports data that was pre-exported from sketch.
-        In future we'll grab it from the currently opened sketch file.
-      </div>
-    }
-    return <App initialData={this.state.data} />
-  }
-}
-
-class App extends Component {
+export default class App extends Component {
   static childContextTypes = {
     data: React.PropTypes.any,    
   }
@@ -97,7 +57,7 @@ class App extends Component {
     savedAt: number,
   }
 
-  constructor(props) {
+  constructor(props: any) {
     super()
     this.state = {
       data: props.initialData,
@@ -189,7 +149,8 @@ class App extends Component {
           componentInstances={this.state.componentInstances[id]}
           clickToSelect={selected && this.state.clickToSelect}
           selectFromClick={this.selectFromClick}
-          selectConfiguration={() => this.setState({currentConfiguration: id})}
+          selectConfiguration={() => this.setState({currentConfiguration: id, selectedTreeItem: 'root'})}
+          renameConfiguration={name => this.renameConfiguration(id, name)}
           removeConfiguration={() => this.hideConfiguration(id)}
           deleteConfiguration={() => this.deleteConfiguration(id)}
         />
@@ -222,9 +183,9 @@ class App extends Component {
     this.changeStyle(this.state.selectedTreeItem, attr, value, prevAttr)
   }
 
-  onChangeConfiguration = (configuration: any) => {
-    const {data: {components}, currentComponent, currentConfiguration} = this.state
-    if (currentConfiguration === 'default') {
+  changeConfiguration = (id: string, configuration: any) => {
+    const {data: {components}, currentComponent} = this.state
+    if (id === 'default') {
       throw new Error("can't modify the default configuration")
     }
     const {savedConfigurations} = components[currentComponent]
@@ -236,11 +197,23 @@ class App extends Component {
           ...components[currentComponent],
           savedConfigurations: {
             ...savedConfigurations,
-            [currentConfiguration]: configuration,
+            [id]: configuration,
           },
         },
       },
     })
+  }
+
+  renameConfiguration = (id: string, name: string) => {
+    const {data: {components}, currentComponent} = this.state
+    this.changeConfiguration(id, {
+      ...components[currentComponent].savedConfigurations[id],
+      name,
+    })
+  }
+
+  onChangeConfiguration = (configuration: any) => {
+    this.changeConfiguration(this.state.currentConfiguration, configuration)
     this.setState({
       configurationTicks: {
         ...this.state.configurationTicks,

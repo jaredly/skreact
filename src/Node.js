@@ -133,10 +133,11 @@ const renderTree = (id, nodes, domNodes, symbols, hide, props, rootStyle = null)
     ...rootStyle,
     ...myProps.style,
   }
+  const {stringValue, ...divProps} = myProps
   return <div
     key={id}
     data-key={id}
-    {...myProps}
+    {...divProps}
     style={style}
     ref={domNode => domNodes[node.id] = domNode}
   >

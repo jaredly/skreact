@@ -7,6 +7,7 @@ import Icon from './Icon'
 
 import PopupMenu from './PopupMenu'
 import Menu from './Menu'
+import Input from './Input'
 
 import {colors} from './styles'
 
@@ -18,7 +19,8 @@ export default class ConfigurationPreview extends Component {
   }
 
   state: {
-  }
+    renaming: boolean
+  } = {renaming: false}
 
   getChildContext() {
     return {
@@ -65,7 +67,7 @@ export default class ConfigurationPreview extends Component {
   }
 
   render() {
-    const {Component, config={name: 'Default configuration', props: {}, state: {}}} = this.props
+    const {current, Component, config={name: 'Default configuration', props: {}, state: {}}} = this.props
     return <div className={css(styles.container)}>
       <div className={css(styles.top)}>
         <PopupMenu
@@ -81,12 +83,22 @@ export default class ConfigurationPreview extends Component {
           menu={this.renderMenu}
           align="left"
         />
-        <div
-          className={css(styles.name)}
-          onClick={() => this.props.selectConfiguration()}
-        >
-          {config.name}
-        </div>
+        {this.state.renaming
+          ? <Input
+              autoFocus
+              className={css(styles.input)}
+              onChange={text => (this.setState({renaming: false}), this.props.renameConfiguration(text))}
+              onBlur={() => this.setState({renaming: false})}
+              value={config.name}
+            />
+          : <div
+              className={css(styles.name)}
+              onClick={current
+                ? (this.props.config ? () => this.setState({renaming: true}) : null)
+                : () => this.props.selectConfiguration()}
+            >
+              {config.name}
+            </div>}
       </div>
       <div
         className={css(styles.wrapper, this.props.current && styles.wrapperCurrent)}
@@ -143,6 +155,15 @@ const styles = StyleSheet.create({
     color: '#ccc',
     padding: 5,
     fontSize: '90%',
+  },
+
+  input: {
+    border: 'none',
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    cursor: 'pointer',
+    fontSize: 14,
+    color: '#ccc',
+    padding: 5,
   },
 
   icon: {

@@ -1178,6 +1178,10 @@ core-util-is@~1.0.0:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/core-util-is/-/core-util-is-1.0.2.tgz#b5fd54220aa2bc5ab57aab7140c940754503c1a7"
 
+coscript@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/coscript/-/coscript-1.0.0.tgz#1a0ef8d5f8b4a67901b97ae59bd2f51e6cc6b0f1"
+
 create-ecdh@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/create-ecdh/-/create-ecdh-4.0.0.tgz#888c723596cdf7612f6498233eebd7a35301737d"

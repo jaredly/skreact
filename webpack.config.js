@@ -7,6 +7,7 @@ const sourceDirectories = [
 
 module.exports = {
   devtool: 'cheap-module-source-map',
+  target: 'electron-renderer',
   entry: [
     // NOTE: in prod mode, I'll ditch the react-hot-loader, and I can also
     // (maybe) ditch transform-es2015-classes...

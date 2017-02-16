@@ -274,17 +274,17 @@ class TreeNode extends Component  {
 } 
 
 const styles = StyleSheet.create({
-
   hiddenIcon: {
     padding: '0px 10px',
-    color: '#eee',
+    opacity: 0.2,
+    color: '#aaa',
     ':hover': {
-      color: '#555'
+      opacity: 1,
     }
   },
 
   hiddenIconHidden: {
-    color: '#555'
+    opacity: 1,
   },
 
   container: {

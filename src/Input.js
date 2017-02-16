@@ -26,7 +26,10 @@ export default class Input extends Component {
       ref={node => this.node = node}
       value={this.state.value}
       onChange={e => this.setState({value: e.target.value})}
-      onBlur={() => this.setState({value: this.props.value})}
+      onBlur={() => (
+        this.setState({value: this.props.value}),
+        this.props.onBlur && this.props.onBlur()
+      )}
       onKeyDown={e => e.key === 'Enter'
         ? this.props.onChange(e.target.value)
         : (e.key === 'Escape'
