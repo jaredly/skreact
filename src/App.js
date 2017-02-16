@@ -71,6 +71,8 @@ export default class App extends Component {
   switchCurrentComponent = (currentComponent: string) => {
     this.setState({
       currentComponent,
+      selectedTreeItem: 'root',
+      currentConfiguration: 'default', // TODO select one of the active ones
       domNodes: {},
       propsMap: {},
       componentInstances: {},
@@ -134,10 +136,10 @@ export default class App extends Component {
     </div>
   }
 
-  onChangeStyle = (attr: ?string, value: any, prevAttr?: string) => {
-    const {data, selectedTreeItem} = this.state
+  changeStyle = (id: string, attr: ?string, value: any, prevAttr?: string) => {
+    const {data} = this.state
     if (!data) return
-    const style = {...data.nodes[selectedTreeItem].style}
+    const style = {...data.nodes[id].style}
     if (prevAttr && prevAttr !== attr) {
       delete style[prevAttr]
     }
@@ -149,13 +151,17 @@ export default class App extends Component {
         ...data,
         nodes: {
           ...data.nodes,
-          [selectedTreeItem]: {
-            ...data.nodes[selectedTreeItem],
+          [id]: {
+            ...data.nodes[id],
             style,
           }
         }
       }
     })
+  }
+
+  onChangeStyle = (attr: ?string, value: any, prevAttr?: string) => {
+    this.changeStyle(this.state.selectedTreeItem, attr, value, prevAttr)
   }
 
   setSelectedTreeItem = (item: string) => {
@@ -164,6 +170,24 @@ export default class App extends Component {
 
   selectFromClick = (item: string) => {
     this.setState({selectedTreeItem: item, clickToSelect: false})
+  }
+
+  toggleHidden = (id: string) => {
+    const node = this.state.data.nodes[id]
+    const importedHidden = node.importedStyle.display === 'none'
+    if (importedHidden) {
+      if (!node.style.display || node.style.display === 'none') {
+        return this.changeStyle(id, 'display', 'flex')
+      } else {
+        return this.changeStyle(id, null, null, 'display')
+      }
+    } else {
+      if (node.style.display === 'none') {
+        return this.changeStyle(id, null, null, 'display')
+      } else {
+        return this.changeStyle(id, 'display', 'none')
+      }
+    }
   }
 
   render() {
@@ -206,6 +230,8 @@ export default class App extends Component {
             idsByName={idsByName}
             selected={selectedTreeItem}
             setSelected={this.setSelectedTreeItem}
+            toggleHidden={this.toggleHidden}
+            navigateToComponent={this.switchCurrentComponent}
           />
           <Hairline />
           <ConfigurationViewer

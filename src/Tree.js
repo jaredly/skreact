@@ -35,11 +35,19 @@ export default class Tree extends Component {
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.selected !== this.props.selected) {
-      this.ensureVisible(nextProps.selected)
-      this.moveHoverTo(nextProps.selected)
+      if (nextProps.selected !== 'root') {
+        this.ensureVisible(nextProps.selected)
+      }
+    }
+    if (nextProps.selected !== 'root') {
+      setTimeout(() => {
+        this.moveHoverTo(nextProps.selected)
+      }, 20)
+    } else {
+      this._hover.style.display = 'none'
     }
   }
-  
+
   ensureVisible(id) {
     const expanded = {...this.state.expanded}
     const {nodes} = this.props
@@ -134,7 +142,7 @@ export default class Tree extends Component {
   }
 
   render() {
-    const {currentComponent, nodes, components, idsByName, selected} = this.props
+    const {currentComponent, nodes, components, idsByName, selected, toggleHidden} = this.props
     const idsByComponentId = {}
     Object.keys(components).forEach(id => {
       idsByComponentId[id] = idsByName[components[id].Component.rootName]
@@ -158,6 +166,8 @@ export default class Tree extends Component {
         components={components}
         selected={selected}
         setSelected={this.props.setSelected}
+        toggleHidden={toggleHidden}
+        navigateToComponent={this.props.navigateToComponent}
         isRoot
       />
       {this.state.menu &&
@@ -196,9 +206,10 @@ const iconForNode = node => {
 
 class TreeNode extends Component  {
   render() {
-    const {root, nodes, hover, idsByComponentId, components, selected, setSelected, expanded, toggle} = this.props
+    const {root, nodes, hover, idsByComponentId, components, selected, setSelected, expanded, toggle, toggleHidden, navigateToComponent} = this.props
     const open = expanded[root]
     const node = nodes[root]
+    const isHidden = node.style.display === 'none' || (!node.style.display && node.importedStyle.display === 'none')
     const children = node.type === 'ComponentInstance' ?
       [idsByComponentId[node.componentId]] : node.children
     const niceName = node.type === 'ComponentInstance' ?
@@ -210,6 +221,9 @@ class TreeNode extends Component  {
         <div
           onMouseOver={() => hover(root)}
           onMouseOut={() => hover(null)}
+          onDoubleClick={node.type === 'ComponentInstance'
+            ? () => navigateToComponent(node.componentId)
+            : undefined }
           className={css(styles.treeName, root === selected && styles.treeNameSelected)}
           onClick={() => this.props.setSelected(root)}
           onContextMenu={evt => this.props.onContextMenu(root, evt)}
@@ -228,6 +242,11 @@ class TreeNode extends Component  {
               {nodes[root].uniqueName}
             </div>
           </div>
+          <Icon
+            className={css(styles.hiddenIcon, isHidden && styles.hiddenIconHidden)}
+            name={isHidden ? 'eye-disabled' : 'eye'}
+            onClick={() => this.props.toggleHidden(root)}
+          />
         </div>
         {open && children && <div className={css(styles.children)}>
           {children.map(id => (
@@ -242,7 +261,9 @@ class TreeNode extends Component  {
               selected={selected}
               expanded={expanded}
               toggle={toggle}
+              toggleHidden={toggleHidden}
               setSelected={setSelected}
+              navigateToComponent={navigateToComponent}
             />
           ))}
         </div>}
@@ -252,6 +273,18 @@ class TreeNode extends Component  {
 } 
 
 const styles = StyleSheet.create({
+
+  hiddenIcon: {
+    padding: '0px 10px',
+    color: '#eee',
+    ':hover': {
+      color: '#555'
+    }
+  },
+
+  hiddenIconHidden: {
+    color: '#555'
+  },
 
   container: {
     overflow: 'auto',
@@ -278,7 +311,7 @@ const styles = StyleSheet.create({
 
   treeName: {
     flexDirection: 'row',
-    padding: '5px 10px 5px 20px',
+    padding: '5px 0px 5px 20px',
     cursor: 'pointer',
     ':hover': {
       backgroundColor: '#eee',
