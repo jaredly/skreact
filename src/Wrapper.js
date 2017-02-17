@@ -174,7 +174,7 @@ class AppWrapper extends Component {
       data => this.setState({initialProjectData: data, importing: false }),
       err => {
         console.log('import failed', err)
-        this.setState({importError: "Unable to import from sketch"})
+        this.setState({importing: false, importError: "Unable to import from sketch"})
       }
     )
   }

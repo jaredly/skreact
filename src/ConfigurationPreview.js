@@ -141,6 +141,7 @@ const styles = StyleSheet.create({
 
   menuContainer: {
     alignSelf: 'flex-start',
+    color: 'black',
   },
 
   wrapper: {

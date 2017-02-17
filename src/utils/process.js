@@ -86,6 +86,11 @@ const fixedSVGFrame = (frame, svgString) => {
 
 const cborder = border => border && border.isEnabled && border.colorGeneric && border.colorGeneric.alpha && `${border.thickness}px solid ${color2string(ccolor(border.colorGeneric))}`
 
+const paragraphStyle = style => style && {
+  textAlign: style.alignment,
+  lineHeight: style.maximumLineHeight ? style.maximumLineHeight + 'px' : undefined,
+}
+
 const styleExtraFromLayer = (layer: any) => {
   switch (layer.$type) {
     case 'MSBitmapLayer':
@@ -121,6 +126,7 @@ const styleExtraFromLayer = (layer: any) => {
         fontSize: layer.font.pointSize,
         fontFamily: layer.font.fontName,
         color: color2string(ccolor(layer.textColor)),
+        ...paragraphStyle(layer.styleAttributes && layer.styleAttributes.NSParagraphStyle),
       }
     case 'MSArtboardGroup':
       return {
