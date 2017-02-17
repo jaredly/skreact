@@ -29,6 +29,19 @@ const jsonStrings = props => {
   return res
 }
 
+// TODO code duplication
+const rectangleStyle = style => ({
+  backgroundColor: style.backgroundColor,
+  borderRadius: style.borderRadius,
+  border: style.border,
+  boxShadow: style.boxShadow,
+  // TODO do I use these?
+  width: style.width,
+  height: style.height,
+  // TODO background opacity...
+  // opacity: node.styleFromRect.opacity,
+})
+
 const ConfigurationEditor = ({
   nodes,
   Component,
@@ -73,6 +86,13 @@ const ConfigurationEditor = ({
     </div>
   }
   const node = nodes[selectedTreeItem]
+  let imported = node.importedStyle
+  if (node.importedRectStyle) {
+    imported = {
+      ...imported,
+      ...rectangleStyle(node.importedRectStyle),
+    }
+  }
   return <div className={css(styles.container)}>
     <Header
     >
@@ -88,7 +108,7 @@ const ConfigurationEditor = ({
       <div>Imported style</div>
     </Header>
         <pre className={css(styles.json)}>
-      {JSON.stringify(node.importedStyle, null, 2)}
+      {JSON.stringify(imported, null, 2)}
     </pre>
   </div>
 }

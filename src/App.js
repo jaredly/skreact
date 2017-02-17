@@ -108,6 +108,7 @@ export default class App extends Component {
     this.props.reimportData().then(
       data => {
         const mergedData = mergeData(this.state.data, data)
+        this.saveState(data)
         this.setState({
           data,
           reimporting: false,
@@ -127,6 +128,7 @@ export default class App extends Component {
     if (!this.props.saveData) return console.warn('cannot save')
     this.props.saveData(data).then(saved => {
       this.setState({savedAt: Date.now()})
+      console.log('saved')
     }, err => {
       console.error(err)
       console.error('failed to saive')
@@ -392,6 +394,39 @@ export default class App extends Component {
     return <Menu onClose={onClose} items={items} />
   }
 
+  mergeRectWithParent = (id: string) => {
+    const {data: {nodes}} = this.state
+    const node = nodes[id]
+    if (!node.parent) return
+    const parent = nodes[node.parent]
+    if (node.type !== 'Rectangle' ||
+        (parent.type !== 'Group' &&
+        parent.type !== 'SymbolMaster')) return console.log('not right')
+    if (node.importedStyle.opacity &&
+        node.importedStyle.opacity !== 1) {
+      return alert("Not merging b/c rectangle is partially transparent")
+    }
+    this.setState({
+      selectedTreeItem: parent.id,
+    })
+    this.updateData({
+      ...this.state.data,
+      nodes: {
+        ...nodes,
+        [parent.id]: {
+          ...parent,
+          children: parent.children.filter(cid => cid !== id),
+          importedRectStyle: node.importedStyle,
+          mergedRectId: id,
+        },
+        [id]: {
+          ...node,
+          parent: null,
+        }
+      }
+    })
+  }
+
   render() {
     const {nodes, idsByName, components} = this.state.data
     const {currentComponent, selectedTreeItem} = this.state
@@ -439,6 +474,7 @@ export default class App extends Component {
             setSelected={this.setSelectedTreeItem}
             toggleHidden={this.toggleHidden}
             navigateToComponent={this.switchCurrentComponent}
+            mergeRectWithParent={this.mergeRectWithParent}
             createComponent={this.createComponent}
           />
           <Hairline />

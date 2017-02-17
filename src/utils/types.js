@@ -24,10 +24,14 @@ export type NodeT = ({
   symbolId: string,
   children: ObjectId[],
   childSize: {width: number, height: number},
+  mergedRectId?: ?string,
+  importedRectStyle?: ?any,
 } & NodeBase) | ({
   type: 'Group',
   children: ObjectId[],
   childSize: {width: number, height: number},
+  mergedRectId?: ?string,
+  importedRectStyle?: ?any,
   /*
 } & NodeBase) | ({
   type: 'SymbolInstance',
@@ -49,11 +53,6 @@ export type NodeT = ({
   // TODO I should handle ovals as well
   type: 'Rectangle',
   svgSource: string,
-} & NodeBase) | ({
-  type: 'RectangleGroup',
-  children: ObjectId[],
-  replacedGroupId: ObjectId,
-  styleFromGroup: any,
 } & NodeBase) | ({
   type: 'ImportError',
 } & NodeBase)

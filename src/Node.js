@@ -97,26 +97,24 @@ const body = (node, symbols, style, myProps) => {
           id={node.id}
         />
       }
-      /* TODO compositing will need to use canvas for that.
-      if (node.tintColor) {
-        return <div
-        style={{
-          width: style.width,
-          height: style.height,
-          backgroundColor: node.tintColor,
-          backgroundImage: `url(data:image/png;base64,${node.imageData})`,
-          backgroundBlendMode: 'screen',
-          backgroundSize: 'cover',
-        }}
-        />
-      }
-      */
       return <img
         src={`data:image/png;base64,${node.imageData}`}
         style={imgStyle}
       />
   }
 }
+
+const rectangleStyle = style => ({
+  backgroundColor: style.backgroundColor,
+  borderRadius: style.borderRadius,
+  border: style.border,
+  boxShadow: style.boxShadow,
+  // TODO do I use these?
+  width: style.width,
+  height: style.height,
+  // TODO background opacity...
+  // opacity: node.styleFromRect.opacity,
+})
 
 const renderTree = (id, nodes, domNodes, symbols, hide, props, rootStyle = null) => {
   const node = nodes[id]
@@ -125,8 +123,13 @@ const renderTree = (id, nodes, domNodes, symbols, hide, props, rootStyle = null)
   const myProps = props[node.uniqueName] || {}
   const width = !node.importedStyle.width && node.childSize ? node.childSize.width : node.importedStyle.width
   const height = !node.importedStyle.height && node.childSize ? node.childSize.height : node.importedStyle.height
+  const rectStyle = node.type === 'RectangleGroup'
+    ? rectangleStyle(node.importedRectStyle)
+    : null
+
   const style = {
     ...node.importedStyle,
+    ...rectStyle,
     width,
     height,
     ...node.style,

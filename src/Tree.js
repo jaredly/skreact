@@ -122,14 +122,29 @@ export default class Tree extends Component {
   showContextMenu = (id, evt) => {
     evt.preventDefault()
     evt.stopPropagation()
+    const items = [
+      /*{
+        text: 'Create component',
+        action: () => this.props.createComponent(id),
+      },*/
+    ]
+    const node = this.props.nodes[id]
+    console.log(node, node.type)
+    if (node.type === 'Rectangle' && node.parent) {
+      if (this.props.nodes[node.parent].type === 'Group' ||
+          this.props.nodes[node.parent].type === 'SymbolMaster') {
+        items.push({
+          text: 'Merge with parent group',
+          action: () => this.props.mergeRectWithParent(id),
+        })
+      } else {
+        console.log('nope', this.props.nodes[node.parent].type)
+      }
+    }
+    if (!items.length) return console.log('no items')
     this.setState({
       menuPos: {top: evt.clientY, left: evt.clientX},
-      menu: [
-        {
-          text: 'Create component',
-          action: () => this.props.createComponent(id),
-        },
-      ]
+      menu: items
     })
   }
 

@@ -150,9 +150,9 @@ class AppWrapper extends Component {
   // TODO maybe save both to localstorage and to file?
   // and save to file only on command?
   // dunno whether people would be mad
-  saveData = (data: SkreactFile) => {
-    if (!this.state.selectedProject) return
-    storage.saveDataInFolder(this.state.selectedProject, data)
+  saveData = (data: SkreactFile): Promise<void> => {
+    if (!this.state.selectedProject) return Promise.reject(new Error("State error: no open project"))
+    return storage.saveDataInFolder(this.state.selectedProject, data)
   }
 
   loadProject = (folder: string) => {

@@ -269,8 +269,8 @@ export default processDump
 
 export const mergeData = (oldData: SkreactFile, newData: SkreactFile): SkreactFile => {
   const mergedNodes = {...oldData.nodes}
-  for (let id in newData.nodes) {
-    if (!oldData.nodes[id]) {
+  for (let id in mergedNodes.nodes) {
+    if (!newData.nodes[id]) {
       // umm figure out where to put it
       // TODO probably merge into parent if parent exists n stuff
       continue
@@ -280,6 +280,15 @@ export const mergeData = (oldData: SkreactFile, newData: SkreactFile): SkreactFi
       importedStyle: {
         ...mergedNodes[id].importedStyle,
         ...newData.nodes[id].importedStyle,
+      }
+    }
+    if (newData[mergedNodes[id].mergedRectId]) {
+      mergedNodes[id] = {
+        ...mergedNodes[id],
+        importedRectStyle: {
+          ...mergedNodes[id].importedRectStyle,
+          ...newData[mergedNodes[id].mergedRectId].importedStyle,
+        },
       }
     }
   }
