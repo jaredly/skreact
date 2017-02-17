@@ -14,10 +14,10 @@ ReactDOM.render(
 );
 
 if (module.hot) {
-  (module.hot: any).accept('./App', () => {
+  (module.hot: any).accept('./Wrapper', () => {
     // If you use Webpack 2 in ES modules mode, you can
     // use <App /> here rather than require() a <NextApp />.
-    const NextApp = require('./App').default;
+    const NextApp = require('./Wrapper').default;
     ReactDOM.render(
       <AppContainer>
          <NextApp />

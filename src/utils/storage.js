@@ -12,6 +12,53 @@ import type {SkreactFile} from './types'
 
 const COMPONENTS_KEY = 'skreact:components'
 
+const prom = fn => new Promise((res, rej) => fn((err, val) => err ? rej(err) : res(val)))
+const p1 = fn => new Promise((res, rej) => fn(val => res(val)))
+
+export const verifyProjectExists = (project: any) => {
+  const fs = require('fs')
+  return p1(done => fs.exists(project.folder, done)).then(exists => exists ? project : null)
+}
+
+
+export const saveDataInFolder = (folder: string, data: SkreactFile) => {
+  const fs = require('fs')
+  const path = require('path')
+  const dest = path.join(folder, 'contents.json')
+  const jsonData = {
+    ...data,
+    components: deflateCompnents(data.components)
+  }
+  return new Promise((res, rej) => {
+    if (!fs.existsSync(folder)) {
+      fs.mkdirSync(folder)
+    }
+    fs.writeFile(dest, JSON.stringify(jsonData), (err, val) => {
+      if (err) return rej(err)
+      res()
+    })
+  })
+}
+
+export const loadDataFromFolder = (folder: string) => {
+  const fs = require('fs')
+  const path = require('path')
+  const dest = path.join(folder, 'contents.json')
+  return p1(done => fs.exists(folder, done))
+    .then(exists => {
+      if (!exists) throw new Error(`Project not found: ${folder}`)
+      return prom(done => fs.readFile(dest, done)).then(
+        text => JSON.parse(text),
+        err => {throw new Error(`Project contents not found in ${dest}`)}
+      )
+    }).then(data => {
+      return {
+        ...data,
+        components: inflateComponents(data.components),
+      }
+    })
+}
+
 const initialComponent = (name, rootName) => {
   const Component = props => <Node name={rootName} {...props} />
   Component.displayName = name
@@ -78,7 +125,10 @@ const reifyComponents = components => {
   const result = {}
   for (let symbolId in components) {
     const component = components[symbolId]
-    const name = pascalify(component.rootName)
+    let name = pascalify(component.rootName)
+    if (name.match(/^[^A-Za-z]/)) {
+      name = 'Symbol' + name
+    }
     result[component.id] = {
       name,
       source: defaultCode(name, component.rootName),
@@ -90,9 +140,9 @@ const reifyComponents = components => {
   return result
 }
 
-export const initialImport = (): SkreactFile => {
+export const stateFromImportedData = (importedData: any): SkreactFile => {
   // TODO get from not `window.DATA`
-  const {root, symbols, byId, idsByName, components} = processDump(window.DATA)
+  const {root, symbols, byId, idsByName, components} = processDump(importedData)
   const rootName = byId[root].uniqueName
   const state = {
     topLevelSketchNodeIds: [root],
@@ -113,4 +163,8 @@ export const initialImport = (): SkreactFile => {
   // TODO should I inflate the Application here?
 
   return state
+}
+
+export const initialImport = (): SkreactFile => {
+  return stateFromImportedData(window.DATA)
 }

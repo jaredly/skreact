@@ -6,7 +6,8 @@ import {css, StyleSheet} from 'aphrodite'
 import App from './App'
 
 import {colors} from './styles'
-import {initialImport, loadSavedState, saveState} from './utils/storage'
+import * as storage from './utils/storage'
+import sketchImport from './sketchImport'
 
 import type {SkreactFile} from './utils/types'
 
@@ -15,7 +16,7 @@ const PROJECT_HISTORY = 'skreact:project-history'
 const save = (key, val) => localStorage[key] = JSON.stringify(val)
 const tryLoad = key => {
   try {
-    return JSON.parse(localStorage[key])
+    return JSON.parse(localStorage[key] || '')
   } catch (e) {
     return null
   }
@@ -23,37 +24,83 @@ const tryLoad = key => {
 
 const projectHistory = tryLoad(PROJECT_HISTORY)
 
-export default class AppWrapper extends Component {
+type ProjectHistory = {
+  folder: string,
+  lastOpened: number,
+}[]
+
+export default class ProjectHistoryWrapper extends Component {
+  state: {projectHistory: ?ProjectHistory} = {
+    projectHistory: null
+  }
+
+  componentWillMount() {
+    Promise.all((tryLoad(PROJECT_HISTORY) || []).map(storage.verifyProjectExists)).then(results => {
+      this.setState({projectHistory: results.filter(x => x)})
+    }, err => {
+      this.setState({projectHistory: []})
+    })
+  }
+
+  render() {
+    if (!this.state.projectHistory) {
+      return <div className={css(styles.loading)}>
+        Loading...
+      </div>
+    }
+    return <AppWrapper projectHistory={this.state.projectHistory} />
+  }
+}
+
+class AppWrapper extends Component {
   state: {
-    projectHistory: {
-      folder: string,
-      lastOpened: number,
-    }[],
+    projectHistory: ProjectHistory,
     selectedProject: ?string,
     initialProjectData: ?SkreactFile,
-    newProjectLocation: ?string,
+    newProjectLocation: string,
     importError: ?string,
     loadingError: ?string,
     importing: boolean,
+    creating: boolean,
   }
 
-  constructor() {
+  constructor(props) {
     super()
     this.state = {
-      projectHistory: tryLoad(PROJECT_HISTORY) || [],
+      projectHistory: props.projectHistory,
       newProjectLocation: '',
       selectedProject: null,
       initialProjectData: null,
       importError: null,
       loadingError: null,
       importing: false,
+      creating: false,
     }
+  }
+
+  createProject = () => {
+    const {newProjectLocation, initialProjectData} = this.state
+    if (!newProjectLocation || !initialProjectData) return
+    const folder = newProjectLocation
+    const projectHistory = this.state.projectHistory.concat([{
+      folder,
+      lastOpened: Date.now(),
+    }])
+    this.setState({creating: true})
+    storage.saveDataInFolder(folder, initialProjectData)
+      .then(() => {
+        save(PROJECT_HISTORY, projectHistory)
+        this.setState({ projectHistory, newProjectLocation: '', selectedProject: folder })
+      }, err => {
+        console.error('failed to do it')
+      });
   }
 
   // TODO maybe save both to localstorage and to file?
   // and save to file only on command?
   // dunno whether people would be mad
   saveData = (data: SkreactFile) => {
+    if (!this.state.selectedProject) return
     storage.saveDataInFolder(this.state.selectedProject, data)
   }
 
@@ -63,41 +110,22 @@ export default class AppWrapper extends Component {
       : item
     ))
     this.setState({selectedProject: folder})
-    storage.loadDataFromFolder(folder)
+    return storage.loadDataFromFolder(folder)
       .then(
         data => this.setState({initialProjectData: data}),
         err => (console.error(err), this.setState({loadingError: `Unable to load from ${folder}`}))
       )
   }
 
-  doImport = () => {
-    loadSavedState()
-      // .then(data => data || initialImport()) // TODO remove
-      .then(data => this.setState({loading: false, data}))
-    this.setState({data: initialImport()})
-  }
-
-  _render() {
-    if (this.state.loading) {
-      return <div>Loading...</div>
-    }
-    if (!this.state.data) {
-      return <div>
-        To get started, import something
-        <button
-          onClick={this.doImport}
-        >
-          Import
-        </button>
-        Note: currently this only imports data that was pre-exported from sketch.
-        In future we'll grab it from the currently opened sketch file.
-      </div>
-    }
-    return <App initialData={this.state.data} />
-  }
-
   importFromSketch = () => {
     this.setState({importing: true})
+    sketchImport().then(
+      data => this.setState({initialProjectData: data, importing: false }),
+      err => {
+        console.log('import failed', err)
+        this.setState({importError: "Unable to import from sketch"})
+      }
+    )
   }
 
   browse = () => {
@@ -111,6 +139,26 @@ export default class AppWrapper extends Component {
       file += '.skreact'
     }
     this.setState({newProjectLocation: file})
+  }
+
+  renderImporter() {
+    return <div>
+      <div className={css(styles.newProjectPrompt)}>
+        Make sure Sketch is open & the artboard you want to import is selected.
+      </div>
+      {this.state.importing
+        ? <div >Importing....<progress /></div> // TODO show progress bar or something
+        : <button
+            onClick={this.importFromSketch}
+            className={css(styles.importButton)}
+          >
+            Import artboard
+          </button>}
+      {this.state.importError &&
+        <div className={css(styles.importError)}>
+          {this.state.importError}
+        </div>}
+    </div>
   }
 
   render() {
@@ -127,21 +175,36 @@ export default class AppWrapper extends Component {
         return <App
           initialData={this.state.initialProjectData}
           saveData={this.saveData}
+          reimportData={sketchImport}
         />
       }
-      return <div>Loading...</div>
+      return <div className={css(styles.loading)}>Loading...</div>
     }
 
     const {projectHistory, newProjectLocation} = this.state
+    const isValidLocation = !!newProjectLocation.match(/\.skreact$/)
     return <div className={css(styles.container)}>
+      <div className={css(styles.inner)}>
       {projectHistory.length > 0 && <div className={css(styles.recentList)}>
         {this.state.projectHistory.map(item => (
-          <div className={css(styles.recentProject)}>
+          <div
+            key={item.folder}
+            className={css(styles.recentProject)}
+            onClick={() => this.loadProject(item.folder)}
+          >
+            <div className={css(styles.name)}>
             {projectName(item.folder)}
+            </div>
+            <div className={css(styles.location)}>
+            {item.folder}
+            </div>
           </div>
         ))}
       </div>}
       <div className={css(styles.newProject)}>
+        <div className={css(styles.extensionNode)}>
+          Project location must end in '.skreact'
+        </div>
         <div className={css(styles.inputLine)}>
           <input
             type="text"
@@ -157,21 +220,15 @@ export default class AppWrapper extends Component {
             Browse
           </button>
         </div>
-        <div className={css(styles.newProjectPrompt)}>
-          Make sure Sketch is open & the artboard you want to import is selected.
-        </div>
-        {this.state.importing
-         ? <div >Importing....<progress /></div> // TODO show progress bar or something
-         : <button
-              onClick={this.importFromSketch}
-              className={css(styles.importButton)}
+        {this.state.initialProjectData
+          ? <button
+              onClick={this.createProject}
+              disabled={!isValidLocation}
             >
-              Import artboard
-            </button>}
-        {this.state.importError &&
-          <div className={css(styles.importError)}>
-            {this.state.importError}
-          </div>}
+              Create project
+            </button>
+          : this.renderImporter()}
+      </div>
       </div>
     </div>
   }
@@ -183,6 +240,14 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     justifyContent: 'center',
+    flex: 1,
+  },
+
+  loading: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: 30,
+    color: '#888',
     flex: 1,
   },
 
@@ -202,6 +267,24 @@ const styles = StyleSheet.create({
   inputLine: {
     flexDirection: 'row',
     alignItems: 'center',
-  }
+  },
+
+  recentList: {
+    alignSelf: 'stretch',
+    border: '1px solid #ccc',
+    marginBottom: 30,
+  },
+
+  recentProject: {
+    padding: '10px 20px',
+    cursor: 'pointer',
+    ':hover': {
+      backgroundColor: '#eee',
+    }
+  },
+
+  location: {
+    fontSize: '80%',
+  },
 
 })

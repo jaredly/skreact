@@ -39,10 +39,18 @@ const throttle = <T>(fn: (args: T) => void, time) => {
   }
 }
 
+type Props = {
+  initialData: SkreactFile,
+  saveData: (data: SkreactFile) => void,
+  reimportData: () => Promise<SkreactFile>,
+}
+
 export default class App extends Component {
   static childContextTypes = {
     data: React.PropTypes.any,    
   }
+
+  props: Props
 
   state: {
     data: SkreactFile,
@@ -59,6 +67,8 @@ export default class App extends Component {
 
   constructor(props: any) {
     super()
+    console.log('app initial', props)
+    window.app = this
     this.state = {
       data: props.initialData,
       savedAt: Date.now(),

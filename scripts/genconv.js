@@ -39,12 +39,6 @@ const clearedForInheritance = [
   'MSSymbolMaster',
 ]
 
-/*
-    innerShadows: convertArray(data.innerShadows()),
-    shadows: convertArray(data.shadows()),
-    borders: convertArray(data.borders()),
-   */
-
 const extraProps = {
   'MSShapeGroup': `\n    svgString: generateSVGString(data) + '',`,
   'MSSymbolMaster': `\n    svgString: generateSVGString(data) + '',`,
@@ -358,15 +352,6 @@ function writeFile(path, data) {
     .writeToFile_atomically_(@"".stringByAppendingString(path), true);
 }
 
-/*
-var modal = NSSavePanel.savePanel()
-modal.allowedFileTypes = ['json']
-modal.runModal()
-var dest = modal.URL().path()
-*/
-
-var dest = '/Users/jared/khan/skreact/data/dump.js'
-
 function findArtboard(node) {
   while (node && !(node instanceof MSArtboardGroup)) {
     node = node.parentObject()
@@ -417,7 +402,7 @@ function processSymbols(symbolsPage, i) {
   }
 }
 
-function runExport() {
+function runExport(dest, asJs) {
   log('running export')
   var document = context.api().selectedDocument
 
@@ -435,19 +420,19 @@ function runExport() {
   processSymbols(symbolsPage, 1)
 
   var dump = JSON.stringify({root: root, converteds: converteds}, null, 2)
-  writeFile(dest, 'window.DATA = ' + dump)
+  if (asJs) {
+    dump = 'window.DATA = ' + dump
+  }
+  writeFile(dest, dump)
   log('dumped!')
 }
 
-runExport()
-`
-
-const getSingleArtboard = `
-
+var dest = context.scriptPath.stringByDeletingLastPathComponent() + '/dump.json'
+runExport(dest)
 `
 
 const fs = require('fs')
-fs.writeFileSync(path.join(__dirname, 'sketchExportJSON.js'), text, 'utf8')
+fs.writeFileSync(path.join(__dirname, 'export.sketchplugin'), text, 'utf8')
 
 console.log('unconvertable')
 console.log(general.join('\n'))
