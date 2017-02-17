@@ -38,6 +38,9 @@ export default class ComponentList extends Component {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    overflow: 'auto',
+  },
   name: {
     fontSize: 12,
     fontWeight: 100,

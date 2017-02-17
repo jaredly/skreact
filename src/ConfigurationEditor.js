@@ -45,7 +45,7 @@ const ConfigurationEditor = ({
         >
           <div>Properties</div>
         </Header>
-        <pre>
+        <pre className={css(styles.json)}>
           <KeyValueEditor
             emptyPlaceholder="Add prop"
             data={jsonStrings(configuration.props)}
@@ -87,7 +87,7 @@ const ConfigurationEditor = ({
     >
       <div>Imported style</div>
     </Header>
-    <pre style={{overflow: 'auto', alignSelf: 'stretch'}}>
+        <pre className={css(styles.json)}>
       {JSON.stringify(node.importedStyle, null, 2)}
     </pre>
   </div>
@@ -97,7 +97,12 @@ export default ConfigurationEditor
 
 const styles = StyleSheet.create({
   container: {
-    height: 400,
+    flexBasis: 400,
+    flexShrink: 2,
     overflow: 'auto',
+  },
+  json: {
+    overflow: 'auto',
+    alignSelf: 'stretch',
   }
 })

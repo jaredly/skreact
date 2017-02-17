@@ -104,10 +104,15 @@ export default class App extends Component {
   }
 
   reimportData = () => {
+    this.setState({reimporting: true})
     this.props.reimportData().then(
       data => {
         const mergedData = mergeData(this.state.data, data)
-        this.setState({data})
+        this.setState({
+          data,
+          reimporting: false,
+          showingReimport: false,
+        })
       },
       err => {
         console.error(err)
@@ -482,7 +487,7 @@ export default class App extends Component {
         <ReimportDialog
           loading={this.state.reimporting}
           onLoad={this.reimportData}
-          onClose={() => this.setState({reimporting: false})}
+          onClose={() => this.setState({showingReimport: false})}
           error={this.state.reimportError}
         />}
     </div>
@@ -496,7 +501,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   leftSide: {
-    overflow: 'auto',
+    // overflow: 'auto',
     width: 300,
   },
   preview: {
@@ -528,6 +533,7 @@ const styles = StyleSheet.create({
     padding: 5,
     fontSize: 20,
     color: colors.highlight,
+    cursor: 'pointer',
   },
 
   tree: {

@@ -7,8 +7,9 @@ import type {SkreactFile, NodeT, /*NodeExtra, */NodeBase, ObjectId} from './type
 
 const color2string = color => color && (
   color.a === 1
-  ? `rgba(${Math.round(color.r * 255)}, ${Math.round(color.g * 255)}, ${Math.round(color.b * 255)}, ${color.a})`
-  : `rgb(${Math.round(color.r * 255)})`)
+  ? `rgb(${Math.round(color.r * 255)}, ${Math.round(color.g * 255)}, ${Math.round(color.b * 255)})`
+  : `rgba(${Math.round(color.r * 255)}, ${Math.round(color.g * 255)}, ${Math.round(color.b * 255)}, ${color.a})`
+)
 
 const cframe = frame => frame && ({
   top: frame.top,
@@ -261,5 +262,22 @@ function processDump({root, converteds}: any) {
 export default processDump
 
 export const mergeData = (oldData: SkreactFile, newData: SkreactFile): SkreactFile => {
+  const mergedNodes = {...oldData.nodes}
+  for (let id in newData.nodes) {
+    if (!oldData.nodes[id]) {
+      // umm figure out where to put it
+      // TODO probably merge into parent if parent exists n stuff
+      continue
+    }
+    mergedNodes[id] = {
+      ...mergedNodes[id],
+      importedStyle: {
+        ...mergedNodes[id].importedStyle,
+        ...newData.nodes[id].importedStyle,
+      }
+    }
+  }
 
+  const result = {...oldData, nodes: mergedNodes}
+  return result
 }
