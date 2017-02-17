@@ -20,9 +20,6 @@ export default class ComponentList extends Component {
     const {components, selected} = this.props
     const ids = Object.keys(components).sort((a, b) => cmp(components[a].name, components[b].name))
     return <div className={css(styles.container)}>
-      <Header>
-          Components
-      </Header>
       <div className={css(styles.names)}>
         {ids.map(id => (
           <div

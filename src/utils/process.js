@@ -3,7 +3,7 @@
 import inflate from './inflateDump'
 import uuid from './uuid'
 
-import type {NodeT, /*NodeExtra, */NodeBase, ObjectId} from './types'
+import type {SkreactFile, NodeT, /*NodeExtra, */NodeBase, ObjectId} from './types'
 
 const color2string = color => color && (
   color.a === 1
@@ -145,7 +145,7 @@ const styleFromLayer = (layer: any) => {
   }
 }
 
-const nodeBaseFromLayer = (layer: any, idsByName: any, parent: ObjectId): NodeBase => ({
+const nodeBaseFromLayer = (layer: any, idsByName: any, parent: ?ObjectId): NodeBase => ({
     id: layer.objectID,
     parent,
     name: layer.name,
@@ -157,7 +157,7 @@ const nodeBaseFromLayer = (layer: any, idsByName: any, parent: ObjectId): NodeBa
     style: {},
 })
 
-const nodeFromLayer = (layer: any, idsByName: any, components: any, parent: ObjectId): NodeT => {
+const nodeFromLayer = (layer: any, idsByName: any, components: any, parent: ?ObjectId): NodeT => {
   const node = typeof layer === 'string' ? {
     type: 'ImportError',
     id: layer,
@@ -202,7 +202,7 @@ const calcChildSize = (children, byId) => {
   return {width: w, height: h}
 }
 
-const processLayer = (layer, byId, idsByName, components, parent: ObjectId): ObjectId => {
+const processLayer = (layer, byId, idsByName, components, parent: ?ObjectId): ObjectId => {
   const node: NodeT = nodeFromLayer(layer, idsByName, components, parent)
   if (node.type === 'SymbolMaster') {
     node.id = node.symbolId
@@ -259,3 +259,7 @@ function processDump({root, converteds}: any) {
 }
 
 export default processDump
+
+export const mergeData = (oldData: SkreactFile, newData: SkreactFile): SkreactFile => {
+
+}

@@ -12,15 +12,15 @@ import Header from './Header'
 import Hairline from './Hairline'
 import ComponentList from './ComponentList'
 import ConfigurationPreview from './ConfigurationPreview'
-import StyleEditor from './StyleEditor'
 import Icon from './Icon'
 import Menu from './Menu'
 import PopupMenu from './PopupMenu'
 import ConfigurationEditor from './ConfigurationEditor'
+import ReimportDialog from './ReimportDialog'
 
 import evalComponent from './utils/evalComponent'
 import {colors} from './styles'
-import {initialImport, loadSavedState, saveState} from './utils/storage'
+import {mergeData} from './utils/process'
 
 import type {SkreactFile} from './utils/types'
 
@@ -41,7 +41,7 @@ const throttle = <T>(fn: (args: T) => void, time) => {
 
 type Props = {
   initialData: SkreactFile,
-  saveData: (data: SkreactFile) => void,
+  saveData: (data: SkreactFile) => Promise<void>,
   reimportData: () => Promise<SkreactFile>,
 }
 
@@ -63,6 +63,9 @@ export default class App extends Component {
     configurationTicks: {[id: string]: number},
     clickToSelect: boolean,
     savedAt: number,
+    reimporting: boolean,
+    showingReimport: boolean,
+    reimportError: ?string,
   }
 
   constructor(props: any) {
@@ -73,7 +76,6 @@ export default class App extends Component {
       data: props.initialData,
       savedAt: Date.now(),
       currentComponent: 'root',
-      // TODO clear these out whenever changing current component
       domNodes: {},
       propsMap: {},
       configurationTicks: {},
@@ -81,6 +83,9 @@ export default class App extends Component {
       selectedTreeItem: 'root',
       currentConfiguration: 'default',
       clickToSelect: false,
+      reimporting: false,
+      showingReimport: false,
+      reimportError: null,
     }
   }
 
@@ -98,9 +103,24 @@ export default class App extends Component {
     }
   }
 
+  reimportData = () => {
+    this.props.reimportData().then(
+      data => {
+        const mergedData = mergeData(this.state.data, data)
+        this.setState({data})
+      },
+      err => {
+        console.error(err)
+        console.error('failed to import')
+        this.setState({reimportError: 'Failed to import from sketch'})
+      }
+    )
+  }
+
   saveState: * = throttle((data: SkreactFile) => {
     console.log('saving')
-    saveState(data).then(saved => {
+    if (!this.props.saveData) return console.warn('cannot save')
+    this.props.saveData(data).then(saved => {
       this.setState({savedAt: Date.now()})
     }, err => {
       console.error(err)
@@ -223,7 +243,8 @@ export default class App extends Component {
   }
 
   onChangeConfiguration = (configuration: any) => {
-    this.changeConfiguration(this.state.currentConfiguration, configuration)
+    const {currentConfiguration} = this.state
+    this.changeConfiguration(currentConfiguration, configuration)
     this.setState({
       configurationTicks: {
         ...this.state.configurationTicks,
@@ -377,6 +398,15 @@ export default class App extends Component {
       </div>
       <div className={css(styles.main)}>
         <div className={css(styles.leftSide)}>
+          <Header>
+              Components
+              <div style={{flex: 1}} />
+              {!!this.props.reimportData && <Icon
+                name="ios-download-outline"
+                className={css(styles.importIcon)}
+                onClick={() => this.setState({showingReimport: true})}
+              />}
+          </Header>
           <ComponentList
             components={components}
             selected={currentComponent}
@@ -448,6 +478,13 @@ export default class App extends Component {
           />
         </div>
       </div>
+      {this.state.showingReimport &&
+        <ReimportDialog
+          loading={this.state.reimporting}
+          onLoad={this.reimportData}
+          onClose={() => this.setState({reimporting: false})}
+          error={this.state.reimportError}
+        />}
     </div>
   }
 }
@@ -485,6 +522,12 @@ const styles = StyleSheet.create({
     paddingLeft: 5,
     lineHeight: '16px',
     fontSize: 11,
+  },
+
+  importIcon: {
+    padding: 5,
+    fontSize: 20,
+    color: colors.highlight,
   },
 
   tree: {

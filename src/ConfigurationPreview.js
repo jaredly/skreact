@@ -1,3 +1,4 @@
+// @flow
 import React, {Component} from 'react'
 import {css, StyleSheet} from 'aphrodite'
 
@@ -30,7 +31,7 @@ export default class ConfigurationPreview extends Component {
     }
   }
 
-  clickToSelect = evt => {
+  clickToSelect = (evt: any) => {
     evt.stopPropagation()
     evt.preventDefault()
     let target = evt.target
@@ -47,7 +48,7 @@ export default class ConfigurationPreview extends Component {
     }
   }
 
-  renderMenu = onClose => {
+  renderMenu = (onClose: () => void) => {
     const items = []
     items.push({
       title: 'Remove configuration from canvas',

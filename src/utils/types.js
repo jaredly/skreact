@@ -7,7 +7,7 @@ export type NodeBase = {
   name: string,
   uniqueName: string,
   importedStyle: any,
-  parent: ObjectId,
+  parent: ?ObjectId,
   style: any,
   // TODO make a distinction between "imported styles" and "overridden styles"
   // e.g. we'll want to do layout things w/ the "overridden styles" stuff
