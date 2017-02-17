@@ -55,6 +55,7 @@ export default class KeyValueEditor extends Component {
               />
             </div>
       ))}
+      <div style={{flexBasis: 5}} />
       <PropertyEditor
         keyName={''}
         value={''}
@@ -133,7 +134,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     fontSize: 12,
     fontFamily: 'monospace',
-    marginBottom: 5,
+    marginBottom: 0,
   },
 
   input: {

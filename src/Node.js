@@ -123,7 +123,7 @@ const renderTree = (id, nodes, domNodes, symbols, hide, props, rootStyle = null)
   const myProps = props[node.uniqueName] || {}
   const width = !node.importedStyle.width && node.childSize ? node.childSize.width : node.importedStyle.width
   const height = !node.importedStyle.height && node.childSize ? node.childSize.height : node.importedStyle.height
-  const rectStyle = node.type === 'RectangleGroup'
+  const rectStyle = node.importedRectStyle
     ? rectangleStyle(node.importedRectStyle)
     : null
 

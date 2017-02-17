@@ -7,6 +7,8 @@ import Header from './Header'
 import Hairline from './Hairline'
 import StyleEditor from './StyleEditor'
 import Icon from './Icon'
+import PopupMenu from './PopupMenu'
+import Menu from './Menu'
 
 import KeyValueEditor from './KeyValueEditor'
 
@@ -49,6 +51,7 @@ const ConfigurationEditor = ({
   componentInstances,
   onChangeConfiguration,
   configuration,
+  onChangeStyleMerge,
   onChangeStyle,
 }: *) => {
   if (selectedTreeItem === 'root') {
@@ -97,6 +100,15 @@ const ConfigurationEditor = ({
     <Header
     >
       <div>Style</div>
+      <div style={{flex: 1}} />
+      <PopupMenu
+        title={<Icon name="ios-arrow-down" className={css(styles.revealArrow)} />}
+        align="right"
+        menu={onClose => <Menu
+          onClose={onClose}
+          items={createStyleCommandsMenu(node.style, imported, onChangeStyleMerge)}
+        />}
+      />
     </Header>
     <StyleEditor
       style={node.style}
@@ -113,6 +125,30 @@ const ConfigurationEditor = ({
   </div>
 }
 
+const createStyleCommandsMenu = (customStyle, imported, onChangeStyleMerge) => {
+  return [{
+    title: 'Center children both',
+    style: {
+      justifyContent: 'center',
+      alignItems: 'center',
+    }
+  }, {
+    title: 'Clear abs positioning',
+    style: {
+      top: 0,
+      left: 0,
+      position: 'relative',
+    }
+  }, {
+    title: 'Distribute children horizontally',
+    style: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      alignItems: 'center',
+    }
+  }].map(({title, style}) => ({title, action: () => onChangeStyleMerge(style)}))
+}
+
 export default ConfigurationEditor
 
 const styles = StyleSheet.create({
@@ -124,5 +160,10 @@ const styles = StyleSheet.create({
   json: {
     overflow: 'auto',
     alignSelf: 'stretch',
+  },
+
+  revealArrow: {
+    padding: 10,
+    cursor: 'pointer',
   }
 })

@@ -127,7 +127,6 @@ class AppWrapper extends Component {
       }])
     }
   }
-  
 
   createProject = () => {
     const {newProjectLocation, initialProjectData} = this.state
@@ -156,14 +155,22 @@ class AppWrapper extends Component {
   }
 
   loadProject = (folder: string) => {
-    save(PROJECT_HISTORY, this.state.projectHistory.map(item => item.folder === folder
-      ? {folder, lastOpened: Date.now()}
+    let found = false
+    const projectHistory = this.state.projectHistory.map(item => item.folder === folder
+      ? (found = true, {folder, lastOpened: Date.now()})
       : item
-    ))
+    )
+    if (!found) {
+      projectHistory.push({folder, lastOpened: Date.now()})
+    }
     this.setState({selectedProject: folder})
     return storage.loadDataFromFolder(folder)
       .then(
-        data => this.setState({initialProjectData: data}),
+        data => {
+          save(PROJECT_HISTORY, projectHistory)
+          this.setState({selectedProject: folder, projectHistory})
+          this.setState({initialProjectData: data})
+        },
         err => (console.error(err), this.setState({loadingError: `Unable to load from ${folder}`}))
       )
   }
@@ -192,6 +199,21 @@ class AppWrapper extends Component {
     this.setState({newProjectLocation: file})
   }
 
+  openProject = () => {
+    const {remote} = require('electron')
+    let folder = remote.dialog.showOpenDialog({
+      title: 'Select ProtoReact project',
+      defaultPath: process.env.HOME,
+      properties: ['openFile'],
+      filters: [{name: 'ProtoReact projects', extensions: ['skreact']}]
+    })
+    if (!folder || folder.length !== 1) return
+    if (!folder[0].match(/\.skreact$/)) {
+      return
+    }
+    this.loadProject(folder[0])
+  }
+
   renderImporter() {
     return <div>
       <div className={css(styles.newProjectPrompt)}>
@@ -209,6 +231,42 @@ class AppWrapper extends Component {
         <div className={css(styles.importError)}>
           {this.state.importError}
         </div>}
+    </div>
+  }
+
+  renderNewProject() {
+    const {newProjectLocation} = this.state
+    const isValidLocation = !!newProjectLocation.match(/\.skreact$/)
+    return <div className={css(styles.newProject)}>
+      <div className={css(styles.newProjectTitle)}>
+        Create a new project
+      </div>
+      <div className={css(styles.extensionNote)}>
+        Project location must end in '.skreact'
+      </div>
+      <div className={css(styles.inputLine)}>
+        <input
+          type="text"
+          value={this.state.newProjectLocation}
+          className={css(styles.input)}
+          onChange={e => this.setState({newProjectLocation: e.target.value})}
+          placeholder="New project location"
+        />
+        <button
+          className={css(styles.browseButton)}
+          onClick={this.browse}
+        >
+          Browse
+        </button>
+      </div>
+      {this.state.initialProjectData
+        ? <button
+            onClick={this.createProject}
+            disabled={!isValidLocation}
+          >
+            Create project
+          </button>
+        : this.renderImporter()}
     </div>
   }
 
@@ -233,53 +291,32 @@ class AppWrapper extends Component {
     }
 
     const {projectHistory, newProjectLocation} = this.state
-    const isValidLocation = !!newProjectLocation.match(/\.skreact$/)
     return <div className={css(styles.container)}>
       <div className={css(styles.inner)}>
-      {projectHistory.length > 0 && <div className={css(styles.recentList)}>
-        {this.state.projectHistory.map(item => (
-          <div
-            key={item.folder}
-            className={css(styles.recentProject)}
-            onClick={() => this.loadProject(item.folder)}
-          >
-            <div className={css(styles.name)}>
-            {projectName(item.folder)}
-            </div>
-            <div className={css(styles.location)}>
-            {item.folder}
-            </div>
-          </div>
-        ))}
-      </div>}
-      <div className={css(styles.newProject)}>
-        <div className={css(styles.extensionNode)}>
-          Project location must end in '.skreact'
-        </div>
-        <div className={css(styles.inputLine)}>
-          <input
-            type="text"
-            value={this.state.newProjectLocation}
-            className={css(styles.input)}
-            onChange={e => this.setState({newProjectLocation: e.target.value})}
-            placeholder="New project location"
-          />
-          <button
-            className={css(styles.browseButton)}
-            onClick={this.browse}
-          >
-            Browse
-          </button>
-        </div>
-        {this.state.initialProjectData
-          ? <button
-              onClick={this.createProject}
-              disabled={!isValidLocation}
+        <button
+          className={css(styles.openbutton)}
+          onClick={this.openProject}
+        >
+          Open existing project
+        </button>
+        {projectHistory.length > 0 &&
+        <div className={css(styles.recentList)}>
+          {this.state.projectHistory.map(item => (
+            <div
+              key={item.folder}
+              className={css(styles.recentProject)}
+              onClick={() => this.loadProject(item.folder)}
             >
-              Create project
-            </button>
-          : this.renderImporter()}
-      </div>
+              <div className={css(styles.name)}>
+              {projectName(item.folder)}
+              </div>
+              <div className={css(styles.location)}>
+              {item.folder}
+              </div>
+            </div>
+          ))}
+        </div>}
+        {this.renderNewProject()}
       </div>
     </div>
   }
@@ -287,11 +324,42 @@ class AppWrapper extends Component {
 
 const projectName = item => item.split('/').slice(-1)[0].split('.').slice(0, -1).join('.')
 
+const button = {
+    padding: '6px 20px',
+    border: 'none',
+    boxShadow: '0 1px 3px #aaa',
+    backgroundColor: '#eee',
+    borderRadius: 3,
+    cursor: 'pointer',
+    ':hover': {
+      backgroundColor: colors.highlight,
+      color: 'white',
+    }
+}
+
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     justifyContent: 'center',
     flex: 1,
+  },
+
+  inner: {
+    flexShrink: 1,
+    marginTop: 20,
+    marginBottom: 20,
+  },
+
+  newProjectTitle: {
+    fontSize: 12,
+    textTransform: 'uppercase',
+    padding: '5px 10px',
+    textAlign: 'center',
+  },
+
+  extensionNote: {
+    fontSize: '70%',
+    padding: '4px 0',
   },
 
   loading: {
@@ -304,6 +372,12 @@ const styles = StyleSheet.create({
 
   input: {
     flex: 1,
+    fontSize: 12,
+    lineHeight: '20px',
+    paddingLeft: 4,
+    border: '1px solid #ccc',
+    borderRadius: 3,
+    marginRight: 10,
   },
 
   newProjectPrompt: {
@@ -311,8 +385,20 @@ const styles = StyleSheet.create({
     padding: '10px 0',
   },
 
+  browseButton: {
+    ...button,
+  },
+
+  openbutton: {
+    ...button,
+    alignSelf: 'center',
+    marginBottom: 10,
+  },
+
   importButton: {
     alignSelf: 'center',
+    padding: '7px 20px',
+    ...button,
   },
 
   inputLine: {
@@ -323,6 +409,9 @@ const styles = StyleSheet.create({
   recentList: {
     alignSelf: 'stretch',
     border: '1px solid #ccc',
+    borderRadius: 3,
+    overflow: 'auto',
+    flex: 1,
     marginBottom: 30,
   },
 

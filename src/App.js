@@ -195,6 +195,25 @@ export default class App extends Component {
     </div>
   }
 
+  setStyle = (id: string, style: any) => {
+    this.updateData({
+      ...this.state.data,
+      nodes: {
+        ...this.state.data.nodes,
+        [id]: {
+          ...this.state.data.nodes[id],
+          style,
+        }
+      }
+    })
+  }
+
+  onChangeStyleMerge = (updates: any) => {
+    const {data, selectedTreeItem} = this.state
+    const style = {...data.nodes[selectedTreeItem].style, ...updates}
+    this.setStyle(selectedTreeItem, style)
+  }
+
   changeStyle = (id: string, attr: ?string, value: any, prevAttr?: string) => {
     const {data} = this.state
     const style = {...data.nodes[id].style}
@@ -204,16 +223,7 @@ export default class App extends Component {
     if (attr) {
       style[attr] = value
     }
-    this.updateData({
-      ...data,
-      nodes: {
-        ...data.nodes,
-        [id]: {
-          ...data.nodes[id],
-          style,
-        }
-      }
-    })
+    this.setStyle(id, style)
   }
 
   onChangeStyle = (attr: ?string, value: any, prevAttr?: string) => {
@@ -454,7 +464,7 @@ export default class App extends Component {
           />
           <Header
           >
-            <div>Instance Tree</div>
+            <div onClick={() => this.setState({selectedTreeItem: 'root'})}>Instance Tree</div>
             <div style={{flex: 1}} />
             <Icon
               name="qr-scanner"
@@ -484,6 +494,7 @@ export default class App extends Component {
             configuration={components[currentComponent].savedConfigurations[this.state.currentConfiguration]}
             selectedTreeItem={selectedTreeItem}
             onChangeStyle={this.onChangeStyle}
+            onChangeStyleMerge={this.onChangeStyleMerge}
             componentInstances={this.state.componentInstances[this.state.currentConfiguration]}
             onChangeConfiguration={this.onChangeConfiguration}
           />

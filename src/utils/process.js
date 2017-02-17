@@ -280,7 +280,7 @@ export const mergeData = (oldData: SkreactFile, newData: SkreactFile): SkreactFi
       importedStyle: {
         ...mergedNodes[id].importedStyle,
         ...newData.nodes[id].importedStyle,
-      }
+      },
     }
     if (newData[mergedNodes[id].mergedRectId]) {
       mergedNodes[id] = {
