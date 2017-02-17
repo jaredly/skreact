@@ -52,6 +52,31 @@ export default class ProjectHistoryWrapper extends Component {
   }
 }
 
+const setupMenu = (items) => {
+  const {Menu} = require('electron').remote
+  Menu.setApplicationMenu(
+    Menu.buildFromTemplate(items)
+  )
+}
+
+const browserWindow = require('electron').remote.getCurrentWindow()
+
+const defaultMenuItems: any = [{
+  label: 'Always on top',
+  type: 'checkbox',
+  checked: browserWindow.isAlwaysOnTop(),
+  click: (item) => {
+    browserWindow.setAlwaysOnTop(item.checked)
+    // item.checked = !item.checked
+  }
+}, {
+  role: 'reload',
+}, {
+  role: 'toggledevtools',
+}, {
+  role: 'quit',
+}]
+
 class AppWrapper extends Component {
   state: {
     projectHistory: ProjectHistory,
@@ -76,7 +101,33 @@ class AppWrapper extends Component {
       importing: false,
       creating: false,
     }
+    setupMenu([{
+      label: 'File',
+      submenu: defaultMenuItems,
+    }])
   }
+
+  componentDidUpdate(prevProps, prevState) {
+    const prevLoaded = prevState.initialProjectData && prevState.selectedProject
+    const nowLoaded = this.state.initialProjectData && this.state.selectedProject
+    if (prevLoaded && !nowLoaded) {
+      setupMenu([{
+        label: 'File',
+        submenu: defaultMenuItems,
+      }])
+    } else if (nowLoaded && !prevLoaded) {
+      setupMenu([{
+        label: 'File',
+        submenu: [{
+          label: 'Close project',
+          click: () => this.setState({initialProjectData: null, selectedProject: null})
+        }, {
+          type: 'separator',
+        }, ...defaultMenuItems],
+      }])
+    }
+  }
+  
 
   createProject = () => {
     const {newProjectLocation, initialProjectData} = this.state

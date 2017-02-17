@@ -17,7 +17,7 @@ app.on('ready', function() {
   mainWindow = new BrowserWindow({
     width: 1200,
     // skipTaskBar: true,
-    alwaysOnTop: true,
+    // alwaysOnTop: true,
     // frame: false,
     title: 'ProtoReact',
     height: 800,
